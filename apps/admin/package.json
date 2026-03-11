@@ -1,0 +1,23 @@
+{
+  "name": "@tetris/admin",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack --port 3001",
+    "build": "next build",
+    "start": "next start --port 3001",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tetris/shared-types": "workspace:*",
+    "@tetris/ui": "workspace:*",
+    "next": "15.5.2",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.3.0",
+    "@types/react": "19.1.11",
+    "@types/react-dom": "19.1.7",
+    "typescript": "5.8.3"
+  }
+}

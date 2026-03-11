@@ -1,0 +1,27 @@
+{
+  "name": "@tetris/web",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:e2e": "next dev -p 3110 --hostname 127.0.0.1",
+    "build": "next build",
+    "start:e2e": "next start --port 3110 --hostname 127.0.0.1",
+    "start": "next start",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tetris/analytics": "workspace:*",
+    "@tetris/game-engine": "workspace:*",
+    "@tetris/shared-types": "workspace:*",
+    "@tetris/ui": "workspace:*",
+    "next": "15.5.2",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.3.0",
+    "@types/react": "19.1.11",
+    "@types/react-dom": "19.1.7",
+    "typescript": "5.8.3"
+  }
+}

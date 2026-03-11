@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@tetris/analytics": ["packages/analytics/src/index.ts"],
+      "@tetris/game-engine": ["packages/game-engine/src/index.ts"],
+      "@tetris/shared-types": ["packages/shared-types/src/index.ts"],
+      "@tetris/ui": ["packages/ui/src/index.tsx"]
+    }
+  }
+}

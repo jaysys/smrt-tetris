@@ -69,6 +69,33 @@ select:focus-visible {
   padding: 32px;
 }
 
+.landing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(202, 90, 46, 0.22), transparent 28%),
+    radial-gradient(circle at 82% 20%, rgba(255, 204, 102, 0.24), transparent 22%),
+    linear-gradient(180deg, rgba(255, 249, 240, 0.98), rgba(247, 235, 220, 0.95));
+}
+
+.landing-copy {
+  display: grid;
+  align-content: start;
+}
+
+.landing-showcase {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.landing-meta {
+  display: grid;
+  gap: 6px;
+}
+
 .eyebrow {
   margin: 0 0 12px;
   color: var(--accent);
@@ -121,6 +148,36 @@ select:focus-visible {
 
 .compact-row {
   margin-top: 16px;
+}
+
+.reward-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.reward-stamp {
+  display: grid;
+  gap: 6px;
+  min-height: 86px;
+  padding: 14px 16px;
+  border: 1px solid rgba(202, 90, 46, 0.2);
+  border-radius: 22px;
+  background: rgba(255, 246, 237, 0.88);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.reward-stamp strong {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--accent-strong);
+}
+
+.reward-stamp span {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.4;
 }
 
 .cta-button,
@@ -179,6 +236,25 @@ select:focus-visible {
   background: linear-gradient(180deg, var(--surface-strong), var(--surface));
 }
 
+.showcase-card,
+.highlight-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.showcase-card::after,
+.highlight-card::after,
+.mode-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -40px -40px auto;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: rgba(202, 90, 46, 0.08);
+  filter: blur(2px);
+}
+
 .secondary-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -217,6 +293,14 @@ select:focus-visible {
 .mode-card {
   display: grid;
   gap: 12px;
+  overflow: hidden;
+}
+
+.mode-card-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.1fr);
+  gap: 20px;
+  align-items: stretch;
 }
 
 .mode-card.active {
@@ -224,9 +308,153 @@ select:focus-visible {
   box-shadow: 0 18px 40px rgba(159, 61, 24, 0.12);
 }
 
+.mode-card h2,
+.showcase-card h2 {
+  margin: 0;
+}
+
+.mode-emotion {
+  font-size: 1.06rem;
+  color: var(--text);
+}
+
+.mode-poster-visual {
+  position: relative;
+  min-height: 160px;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.mode-card-copy {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.mode-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mode-hero-strip {
+  margin-top: 26px;
+}
+
+.poster-orb,
+.poster-glow,
+.poster-grid-lines {
+  position: absolute;
+}
+
+.poster-orb {
+  inset: auto auto 14px 18px;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.12) 36%, rgba(0, 0, 0, 0.12) 100%);
+}
+
+.poster-glow {
+  inset: 18px 16px auto auto;
+  width: 96px;
+  height: 96px;
+  background: rgba(255, 255, 255, 0.2);
+  filter: blur(8px);
+}
+
+.poster-grid-lines {
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.5;
+}
+
+.poster-badge {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff8f2;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.poster-pulse {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 54px;
+  color: #fff8f2;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.poster-meter {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff8f2;
+  font-size: 0.82rem;
+}
+
+.poster-meter strong {
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+}
+
+.poster-marathon .mode-poster-visual {
+  background:
+    radial-gradient(circle at 22% 28%, rgba(255, 232, 168, 0.34), transparent 24%),
+    linear-gradient(135deg, #9f4d20 0%, #d0772f 52%, #f5bb56 100%);
+}
+
+.poster-sprint .mode-poster-visual {
+  background:
+    radial-gradient(circle at 70% 28%, rgba(255, 255, 255, 0.3), transparent 24%),
+    linear-gradient(135deg, #1d4069 0%, #2b78a4 48%, #63c4df 100%);
+}
+
+.poster-daily .mode-poster-visual {
+  background:
+    radial-gradient(circle at 24% 26%, rgba(255, 255, 255, 0.26), transparent 22%),
+    linear-gradient(135deg, #5c2d73 0%, #a63d70 52%, #ff9361 100%);
+}
+
+.mode-hero {
+  background:
+    radial-gradient(circle at 85% 15%, rgba(255, 190, 120, 0.24), transparent 22%),
+    linear-gradient(180deg, rgba(255, 248, 241, 0.98), rgba(247, 234, 220, 0.94));
+}
+
 .mode-meta {
   display: grid;
   gap: 8px;
+}
+
+.mode-spotlight {
+  margin-top: 24px;
+}
+
+.mode-spotlight-copy {
+  max-width: none;
+  margin-top: 14px;
+}
+
+.mode-spotlight-grid {
+  margin-top: 20px;
 }
 
 .filter-row {
@@ -272,6 +500,95 @@ select:focus-visible {
 .daily-spotlight,
 .result-hero-metric {
   margin-top: 24px;
+}
+
+.hero-mascot {
+  position: relative;
+  min-height: 260px;
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 216, 150, 0.36), transparent 24%),
+    linear-gradient(180deg, rgba(40, 29, 24, 0.95), rgba(91, 57, 41, 0.92));
+  overflow: hidden;
+}
+
+.mascot-core,
+.mascot-ring,
+.mascot-eye,
+.mascot-spark {
+  position: absolute;
+}
+
+.mascot-core {
+  left: 50%;
+  top: 50%;
+  width: 124px;
+  height: 124px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background:
+    radial-gradient(circle at 35% 35%, #fff7df 0%, #ffd977 30%, #ff9552 64%, #c54e1f 100%);
+  box-shadow:
+    0 0 0 16px rgba(255, 210, 118, 0.08),
+    0 22px 42px rgba(0, 0, 0, 0.28);
+}
+
+.mascot-ring {
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.ring-outer {
+  width: 194px;
+  height: 194px;
+}
+
+.ring-inner {
+  width: 156px;
+  height: 156px;
+}
+
+.mascot-eye {
+  top: calc(50% - 14px);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #381915;
+  z-index: 1;
+}
+
+.eye-left {
+  left: calc(50% - 22px);
+}
+
+.eye-right {
+  left: calc(50% + 8px);
+}
+
+.mascot-spark {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: rgba(255, 232, 174, 0.82);
+  transform: rotate(45deg);
+}
+
+.spark-top {
+  top: 22%;
+  left: 24%;
+}
+
+.spark-right {
+  top: 30%;
+  right: 18%;
+}
+
+.spark-bottom {
+  bottom: 16%;
+  left: 32%;
 }
 
 .badge-row {
@@ -528,6 +845,10 @@ select:focus-visible {
 }
 
 @media (max-width: 980px) {
+  .landing-hero {
+    grid-template-columns: 1fr;
+  }
+
   .game-layout {
     grid-template-columns: 1fr;
   }
@@ -570,6 +891,14 @@ select:focus-visible {
   .ranking-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .reward-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-card-layout {
+    grid-template-columns: 1fr;
   }
 
   .hero-panel,
@@ -657,6 +986,24 @@ select:focus-visible {
   .status-chip.compact {
     width: 100%;
     justify-content: center;
+  }
+
+  .hero-mascot {
+    min-height: 220px;
+  }
+
+  .mode-poster-visual {
+    min-height: 138px;
+  }
+
+  .poster-pulse {
+    font-size: 0.92rem;
+    bottom: 50px;
+  }
+
+  .poster-meter {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .result-grid .info-card p {

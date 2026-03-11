@@ -83,6 +83,57 @@ const landingHighlights = [
   }
 ] as const;
 
+const landingRewardStamps = [
+  { label: "HOT STREAK", copy: "최근 3판 중 최고 흐름" },
+  { label: "DAILY BONUS", copy: "오늘의 보상 상자 대기 중" },
+  { label: "FAST RETRY", copy: "결과 확인 뒤 바로 재도전" }
+] as const;
+
+const modePosterDetails: Record<
+  GameMode,
+  {
+    tone: string;
+    badge: string;
+    pulse: string;
+    emotion: string;
+    tempo: string;
+    focus: string;
+    reward: string;
+    rewardBadge: string;
+  }
+> = {
+  MARATHON: {
+    tone: "poster-marathon",
+    badge: "ENDLESS RUN",
+    pulse: "점수와 레벨이 계속 쌓이는 장기전",
+    emotion: "끝까지 버티며 수치를 키우는 생존 런",
+    tempo: "집중 템포: 길게 유지하며 누적",
+    focus: "성장 포인트: 점수와 레벨이 끊기지 않고 오른다",
+    reward: "경쟁 포인트: 오래 버틸수록 더 높은 점수 배지",
+    rewardBadge: "High Score Medal"
+  },
+  SPRINT: {
+    tone: "poster-sprint",
+    badge: "TIME ATTACK",
+    pulse: "짧은 시간 안에 손이 가장 빠르게 움직이는 모드",
+    emotion: "짧고 빠르게 압박을 밀어붙이는 타임 어택",
+    tempo: "집중 템포: 짧고 강하게 몰아치기",
+    focus: "핵심 목표: 40라인을 가장 빠르게 정리",
+    reward: "경쟁 포인트: 더 낮은 시간, 더 적은 입력",
+    rewardBadge: "Speed Crown"
+  },
+  DAILY_CHALLENGE: {
+    tone: "poster-daily",
+    badge: "LIMITED DROP",
+    pulse: "오늘만 열리는 보상 미션과 스탬프를 노리는 모드",
+    emotion: "오늘만 열리는 보상 미션",
+    tempo: "집중 템포: 조건을 읽고 안전하게 달성",
+    focus: "핵심 목표: 일일 조건 달성과 진행도 채우기",
+    reward: "보상 포인트: Daily 스탬프와 수집형 보상",
+    rewardBadge: "Daily Stamp"
+  }
+};
+
 const rankingPeriods = ["daily", "weekly", "all"] as const;
 type RankingPeriod = (typeof rankingPeriods)[number];
 
@@ -353,6 +404,7 @@ export function GameClient() {
   const hasTrackedGameFinish = useRef(false);
   const deferredGame = useDeferredValue(game);
   const selectedMode = modeOrder[modeIndex];
+  const selectedModePoster = modePosterDetails[selectedMode];
 
   function readGuestToken() {
     if (typeof window === "undefined") {
@@ -619,113 +671,139 @@ export function GameClient() {
     >
       {screen === "landing" && (
         <>
-          <section className="hero-panel">
-            <p className="eyebrow">Instant Play</p>
-            <div className="daily-banner" data-testid="daily-banner">
-              Daily Challenge: {bootstrapData.dailyChallenge?.title ?? "준비 중"}
+          <section className="hero-panel landing-hero">
+            <div className="landing-copy">
+              <p className="eyebrow">Instant Play</p>
+              <div className="daily-banner" data-testid="daily-banner">
+                Daily Challenge: {bootstrapData.dailyChallenge?.title ?? "준비 중"}
+              </div>
+              <h1>지금 바로 한 판 시작하고, 기록을 남기고, 보상을 챙기세요.</h1>
+              <p className="lead">
+                로그인 없이 <strong>{modeLabels[selectedMode]}</strong> 모드로 진입합니다.
+                첫 화면에서 `바로 시작`, 오늘의 챌린지, 최근 성과를 가장 먼저 인식하게
+                만드는 Hero 구조로 정리했습니다.
+              </p>
+
+              <div className="reward-strip" aria-label="reward language">
+                {landingRewardStamps.map((stamp) => (
+                  <article key={stamp.label} className="reward-stamp">
+                    <strong>{stamp.label}</strong>
+                    <span>{stamp.copy}</span>
+                  </article>
+                ))}
+              </div>
+
+              <div className="cta-row">
+                <button
+                  type="button"
+                  className="cta-button primary"
+                  data-testid="start-button"
+                  onClick={() => {
+                    pushAnalyticsEvent("quick_start_click", {
+                      mode: selectedMode
+                    });
+                    void startGame(selectedMode);
+                  }}
+                >
+                  바로 시작
+                </button>
+                <button
+                  type="button"
+                  className="cta-button"
+                  data-testid="mode-button"
+                  onClick={() => setScreen("modeSelect")}
+                >
+                  모드 선택
+                </button>
+                <button
+                  type="button"
+                  className="cta-button"
+                  data-testid="ranking-button"
+                  onClick={() => setScreen("ranking")}
+                >
+                  랭킹 보기
+                </button>
+              </div>
+
+              <div className="landing-meta">
+                <p className="mode-caption">
+                  현재 빠른 시작 모드: <strong>{modeLabels[selectedMode]}</strong>
+                </p>
+                <p className="mode-caption">오늘 공지: {announcementSummary}</p>
+                <p className="api-chip" data-testid="analytics-last-event" aria-live="polite">
+                  최근 활동: {lastTrackedEvent}
+                </p>
+              </div>
+
+              <div className="settings-row" data-testid="settings-row">
+                <button
+                  type="button"
+                  className="cta-button"
+                  data-testid="settings-sheet-open"
+                  onClick={() => setActiveSheet("settings")}
+                >
+                  설정
+                </button>
+                <button
+                  type="button"
+                  className="cta-button"
+                  data-testid="contrast-toggle"
+                  aria-pressed={appSettings.highContrastMode}
+                  onClick={() => void toggleHighContrastMode()}
+                >
+                  고대비 {appSettings.highContrastMode ? "끔" : "켬"}
+                </button>
+              </div>
             </div>
-            <h1>첫 화면에서 바로 한 판 시작하고, 끝나면 바로 다시 도전합니다.</h1>
-            <p className="lead">
-              로그인 없이 <strong>{modeLabels[selectedMode]}</strong> 모드로 진입할 수 있습니다.
-              Daily Challenge와 랭킹은 보조 동기로 두고, 가장 먼저 눌러야 할 버튼은
-              `바로 시작`입니다.
-            </p>
-            <div className="cta-row">
-              <button
-                type="button"
-                className="cta-button primary"
-                data-testid="start-button"
-                onClick={() => {
-                  pushAnalyticsEvent("quick_start_click", {
-                    mode: selectedMode
-                  });
-                  void startGame(selectedMode);
-                }}
-              >
-                바로 시작
-              </button>
-              <button
-                type="button"
-                className="cta-button"
-                data-testid="mode-button"
-                onClick={() => setScreen("modeSelect")}
-              >
-                모드 선택
-              </button>
-              <button
-                type="button"
-                className="cta-button"
-                data-testid="ranking-button"
-                onClick={() => setScreen("ranking")}
-              >
-                랭킹 보기
-              </button>
-            </div>
-            <p className="mode-caption">
-              현재 빠른 시작 모드: <strong>{modeLabels[selectedMode]}</strong>
-            </p>
-            <p className="mode-caption">
-              오늘 공지: {announcementSummary}
-            </p>
-            <p className="api-chip" data-testid="analytics-last-event" aria-live="polite">
-              최근 활동: {lastTrackedEvent}
-            </p>
-            <div className="settings-row" data-testid="settings-row">
-              <button
-                type="button"
-                className="cta-button"
-                data-testid="settings-sheet-open"
-                onClick={() => setActiveSheet("settings")}
-              >
-                설정
-              </button>
-              <button
-                type="button"
-                className="cta-button"
-                data-testid="contrast-toggle"
-                aria-pressed={appSettings.highContrastMode}
-                onClick={() => void toggleHighContrastMode()}
-              >
-                고대비 {appSettings.highContrastMode ? "끔" : "켬"}
-              </button>
+
+            <div className="landing-showcase">
+              <div className="hero-mascot" aria-hidden="true">
+                <div className="mascot-core" />
+                <div className="mascot-eye eye-left" />
+                <div className="mascot-eye eye-right" />
+                <div className="mascot-ring ring-outer" />
+                <div className="mascot-ring ring-inner" />
+                <div className="mascot-spark spark-top" />
+                <div className="mascot-spark spark-right" />
+                <div className="mascot-spark spark-bottom" />
+              </div>
+              <article className="showcase-card" data-testid="personal-best-card">
+                <p className="eyebrow">Recent Reward</p>
+                <h2>기록 스탬프를 모아 연속 플레이 흐름을 이어가세요.</h2>
+                <p>
+                  최근 성과는 단순 수치가 아니라 스탬프, 불꽃, 챌린지 완료 감각으로
+                  표현합니다.
+                </p>
+              </article>
+              <article className="showcase-card challenge-card" data-testid="daily-preview-card">
+                <p className="eyebrow">Today&apos;s Prize</p>
+                <h2>오늘의 목표</h2>
+                <p>
+                  {bootstrapData.dailyChallenge?.ruleType === "line_target"
+                    ? `${bootstrapData.dailyChallenge.goalValue}라인을 제거하고 Daily 보상 스탬프를 획득하세요.`
+                    : "오늘의 미션은 곧 공개됩니다."}
+                </p>
+                <div className="cta-row compact-row">
+                  <button
+                    type="button"
+                    className="cta-button"
+                    data-testid="daily-detail-open"
+                    onClick={() => setActiveSheet("daily")}
+                  >
+                    자세히 보기
+                  </button>
+                </div>
+              </article>
             </div>
           </section>
 
           <section className="card-grid" aria-label="landing highlights">
             {landingHighlights.map((card) => (
-              <article key={card.title} className="info-card">
+              <article key={card.title} className="info-card highlight-card">
                 <h2>{card.title}</h2>
                 <p>{card.description}</p>
               </article>
             ))}
-          </section>
-
-          <section className="card-grid secondary-grid">
-            <article className="info-card" data-testid="daily-preview-card">
-              <h2>오늘의 목표</h2>
-              <p>
-                {bootstrapData.dailyChallenge?.ruleType === "line_target"
-                  ? `${bootstrapData.dailyChallenge.goalValue}라인을 제거해 보상을 받으세요.`
-                  : "오늘의 미션은 곧 공개됩니다."}
-              </p>
-              <div className="cta-row compact-row">
-                <button
-                  type="button"
-                  className="cta-button"
-                  data-testid="daily-detail-open"
-                  onClick={() => setActiveSheet("daily")}
-                >
-                  자세히 보기
-                </button>
-              </div>
-            </article>
-            <article className="info-card" data-testid="personal-best-card">
-              <h2>최근 성과</h2>
-              <p>
-                지금은 {modeLabels[selectedMode]} 빠른 시작이 기본입니다. 첫 3판 개인 최고
-                기록 강조 연출은 결과 화면에서 이어집니다.
-              </p>
-            </article>
           </section>
 
           <section className="info-card accessibility-panel" data-testid="accessibility-guide">
@@ -744,7 +822,7 @@ export function GameClient() {
 
       {screen === "modeSelect" && (
         <section className="mode-shell" data-testid="mode-screen">
-          <div className="hero-panel compact-hero">
+          <div className="hero-panel compact-hero mode-hero">
             <div className="section-header">
               <button
                 type="button"
@@ -760,46 +838,101 @@ export function GameClient() {
               </div>
             </div>
             <p className="lead">
-              세 모드의 차이를 빠르게 읽고 선택할 수 있게 카드형으로 정리했습니다.
+              기록을 확인한 뒤 어떤 템포로 놀지 바로 고를 수 있게, 세 모드를 포스터형 선택지로
+              다시 정리했습니다.
             </p>
+            <div className="reward-strip mode-hero-strip">
+              <article className="reward-stamp">
+                <strong>TONIGHT&apos;S PICK</strong>
+                <span>{selectedModePoster.pulse}</span>
+              </article>
+              <article className="reward-stamp">
+                <strong>REWARD LOOP</strong>
+                <span>{selectedModePoster.rewardBadge}</span>
+              </article>
+              <article className="reward-stamp">
+                <strong>PLAY TEMPO</strong>
+                <span>{selectedModePoster.tempo}</span>
+              </article>
+            </div>
           </div>
 
           <section className="mode-grid">
             {modeOrder.map((mode) => (
               <article
                 key={mode}
-                className={`info-card mode-card${selectedMode === mode ? " active" : ""}`}
+                className={`info-card mode-card ${modePosterDetails[mode].tone}${selectedMode === mode ? " active" : ""}`}
                 data-testid={`mode-card-${mode}`}
               >
-                <p className="eyebrow">{modeLabels[mode]}</p>
-                <h2>{modeDescriptions[mode].title}</h2>
-                <p>{modeDescriptions[mode].summary}</p>
-                <div className="mode-meta">
-                  <p>{modeDescriptions[mode].ending}</p>
-                  <p>{modeDescriptions[mode].ranking}</p>
-                </div>
-                <div className="cta-row">
-                  <button
-                    type="button"
-                    className="cta-button"
-                    onClick={() => setModeIndex(modeOrder.indexOf(mode))}
-                  >
-                    선택
-                  </button>
-                  <button
-                    type="button"
-                    className="cta-button primary"
-                    data-testid={`mode-start-button-${mode}`}
-                    onClick={() => {
-                      setModeIndex(modeOrder.indexOf(mode));
-                      void startGame(mode);
-                    }}
-                  >
-                    이 모드 시작
-                  </button>
+                <div className="mode-card-layout">
+                  <div className="mode-poster-visual" aria-hidden="true">
+                    <div className="poster-grid-lines" />
+                    <div className="poster-orb" />
+                    <div className="poster-glow" />
+                    <div className="poster-badge">{modePosterDetails[mode].badge}</div>
+                    <div className="poster-pulse">{modePosterDetails[mode].pulse}</div>
+                    <div className="poster-meter">
+                      <span>{modeLabels[mode]}</span>
+                      <strong>{modePosterDetails[mode].rewardBadge}</strong>
+                    </div>
+                  </div>
+                  <div className="mode-card-copy">
+                    <p className="eyebrow">{modeLabels[mode]}</p>
+                    <h2>{modeDescriptions[mode].title}</h2>
+                    <p className="mode-emotion">{modePosterDetails[mode].emotion}</p>
+                    <div className="mode-tag-row">
+                      <span className="status-chip compact">{modePosterDetails[mode].tempo}</span>
+                    </div>
+                    <div className="mode-meta">
+                      <p>{modePosterDetails[mode].focus}</p>
+                      <p>{modePosterDetails[mode].reward}</p>
+                      <p>{modeDescriptions[mode].ending}</p>
+                    </div>
+                    <div className="cta-row">
+                      <button
+                        type="button"
+                        className="cta-button"
+                        onClick={() => setModeIndex(modeOrder.indexOf(mode))}
+                      >
+                        선택
+                      </button>
+                      <button
+                        type="button"
+                        className="cta-button primary"
+                        data-testid={`mode-start-button-${mode}`}
+                        onClick={() => {
+                          setModeIndex(modeOrder.indexOf(mode));
+                          void startGame(mode);
+                        }}
+                      >
+                        이 모드 시작
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </article>
             ))}
+          </section>
+
+          <section className="info-card mode-spotlight" data-testid="mode-spotlight">
+            <div className="section-header">
+              <div>
+                <p className="eyebrow">Selected Poster</p>
+                <h2>{modeLabels[selectedMode]} 플레이 가이드</h2>
+              </div>
+              <span className="status-chip">{selectedModePoster.rewardBadge}</span>
+            </div>
+            <p className="lead mode-spotlight-copy">{selectedModePoster.pulse}</p>
+            <div className="card-grid secondary-grid mode-spotlight-grid">
+              <article className="info-card highlight-card">
+                <h2>집중 포인트</h2>
+                <p>{selectedModePoster.focus}</p>
+              </article>
+              <article className="info-card highlight-card">
+                <h2>보상 포인트</h2>
+                <p>{selectedModePoster.reward}</p>
+              </article>
+            </div>
           </section>
 
           <section className="info-card daily-spotlight">

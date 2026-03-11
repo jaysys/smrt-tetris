@@ -17,21 +17,6 @@ import type {
 import type { UserSettings } from "@tetris/shared-types";
 import { startTransition, useDeferredValue, useEffect, useRef, useState } from "react";
 
-const launchCards = [
-  {
-    title: "Guest Bootstrap",
-    body: "랜딩 진입 시 게스트 토큰과 Daily Challenge 요약을 먼저 로드합니다."
-  },
-  {
-    title: "Game Surface",
-    body: "HUD, hold, next queue, ghost piece를 같은 화면에서 바로 검증할 수 있습니다."
-  },
-  {
-    title: "Result Loop",
-    body: "게임 종료 후 재도전과 후속 CTA를 한 화면에서 이어서 검증할 수 있습니다."
-  }
-];
-
 const tutorialSteps = [
   {
     title: "1. 이동",
@@ -53,6 +38,62 @@ const modeLabels: Record<GameMode, string> = {
   SPRINT: "Sprint",
   DAILY_CHALLENGE: "Daily Challenge"
 };
+
+const modeDescriptions: Record<
+  GameMode,
+  {
+    title: string;
+    summary: string;
+    ending: string;
+    ranking: string;
+  }
+> = {
+  MARATHON: {
+    title: "Marathon",
+    summary: "오래 살아남아 고득점을 쌓는 기본 모드입니다.",
+    ending: "종료 조건: 더 이상 새 블록을 배치할 수 없을 때",
+    ranking: "랭킹 기준: 점수 우선, 이후 짧은 생존 시간"
+  },
+  SPRINT: {
+    title: "Sprint",
+    summary: "40라인을 가장 빠르게 지우는 속도 모드입니다.",
+    ending: "종료 조건: 목표 라인 수 달성",
+    ranking: "랭킹 기준: 기록 시간 우선, 이후 더 적은 입력 수"
+  },
+  DAILY_CHALLENGE: {
+    title: "Daily Challenge",
+    summary: "오늘의 목표와 보상을 노리는 일일 모드입니다.",
+    ending: "종료 조건: 미션 성공 또는 실패 조건 도달",
+    ranking: "랭킹 기준: 당일 점수와 목표 달성 상태"
+  }
+};
+
+const landingHighlights = [
+  {
+    title: "오늘의 Daily Challenge",
+    description: "한 판 흐름을 끊지 않는 보조 목표로 제공됩니다."
+  },
+  {
+    title: "모바일 세로 우선",
+    description: "390x844와 360x800에서 보드, HUD, 조작부가 동시에 보입니다."
+  },
+  {
+    title: "빠른 재도전",
+    description: "결과 확인보다 다시 시작이 더 눈에 띄도록 설계했습니다."
+  }
+] as const;
+
+const rankingPeriods = ["daily", "weekly", "all"] as const;
+type RankingPeriod = (typeof rankingPeriods)[number];
+
+const rankingPeriodLabels: Record<RankingPeriod, string> = {
+  daily: "일간",
+  weekly: "주간",
+  all: "전체"
+};
+
+type Screen = "landing" | "modeSelect" | "ranking" | "playing" | "result";
+type BottomSheet = "settings" | "nickname" | "daily" | null;
 
 const defaultBootstrap: BootstrapData = {
   guestToken: "guest_local_fallback",
@@ -218,6 +259,57 @@ function MiniPiece({
   );
 }
 
+function formatPrimaryMetric(mode: GameMode, snapshot: GameSnapshot | null) {
+  if (!snapshot) {
+    return mode === "SPRINT" ? "40L 준비 중" : "0";
+  }
+
+  if (mode === "SPRINT") {
+    return `${snapshot.linesCleared}/40 lines`;
+  }
+
+  return snapshot.score.toLocaleString("ko-KR");
+}
+
+function buildRankingRows(mode: GameMode, latestResult: GameSnapshot | null) {
+  const baseRows = {
+    MARATHON: [
+      { rank: 1, nickname: "SkyStack", metric: "42,800", achievedAt: "오늘 00:12" },
+      { rank: 2, nickname: "LineRush", metric: "38,260", achievedAt: "오늘 00:41" },
+      { rank: 3, nickname: "BlockMint", metric: "34,900", achievedAt: "어제 23:58" }
+    ],
+    SPRINT: [
+      { rank: 1, nickname: "FortyDash", metric: "01:28.42", achievedAt: "오늘 00:07" },
+      { rank: 2, nickname: "QuickDrop", metric: "01:34.11", achievedAt: "오늘 00:39" },
+      { rank: 3, nickname: "SpinRail", metric: "01:40.25", achievedAt: "어제 21:18" }
+    ],
+    DAILY_CHALLENGE: [
+      { rank: 1, nickname: "DailyAce", metric: "Goal + 12,400", achievedAt: "오늘 00:31" },
+      { rank: 2, nickname: "ComboDay", metric: "Goal + 10,820", achievedAt: "오늘 00:43" },
+      { rank: 3, nickname: "HoldLess", metric: "Goal + 9,760", achievedAt: "어제 22:11" }
+    ]
+  } satisfies Record<
+    GameMode,
+    { rank: number; nickname: string; metric: string; achievedAt: string }[]
+  >;
+
+  const currentMetric =
+    mode === "SPRINT"
+      ? `${latestResult?.linesCleared ?? 0}/40 lines`
+      : `${latestResult?.score.toLocaleString("ko-KR") ?? "0"}`;
+
+  return [
+    {
+      rank: "내 기록",
+      nickname: "게스트",
+      metric: currentMetric,
+      achievedAt: latestResult ? "방금 전" : "기록 없음",
+      highlighted: true
+    },
+    ...baseRows[mode].map((row) => ({ ...row, highlighted: false }))
+  ];
+}
+
 function GameBoard({ state }: { state: GameSnapshot }) {
   const rows = createRenderMatrix(state);
 
@@ -241,9 +333,10 @@ function GameBoard({ state }: { state: GameSnapshot }) {
 
 export function GameClient() {
   const [modeIndex, setModeIndex] = useState(0);
-  const [screen, setScreen] = useState<"landing" | "playing" | "result">(
-    "landing"
-  );
+  const [screen, setScreen] = useState<Screen>("landing");
+  const [rankingPeriod, setRankingPeriod] = useState<RankingPeriod>("daily");
+  const [activeSheet, setActiveSheet] = useState<BottomSheet>(null);
+  const [nicknameValue, setNicknameValue] = useState("");
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [bootstrapData, setBootstrapData] = useState<BootstrapData>(defaultBootstrap);
@@ -516,6 +609,7 @@ export function GameClient() {
   }, [deferredGame?.level, deferredGame?.status, screen, softDropActive, tutorialOpen]);
 
   const currentTutorialStep = tutorialSteps[tutorialStepIndex];
+  const rankingRows = buildRankingRows(selectedMode, deferredGame);
 
   return (
     <main
@@ -526,14 +620,15 @@ export function GameClient() {
       {screen === "landing" && (
         <>
           <section className="hero-panel">
-            <p className="eyebrow">D1 Core Play Loop</p>
+            <p className="eyebrow">Instant Play</p>
             <div className="daily-banner" data-testid="daily-banner">
-              Daily Challenge preview: {bootstrapData.dailyChallenge?.title ?? "준비 중"}
+              Daily Challenge: {bootstrapData.dailyChallenge?.title ?? "준비 중"}
             </div>
-            <h1>게스트 즉시 플레이와 결과 재도전 루프를 연결했습니다.</h1>
+            <h1>첫 화면에서 바로 한 판 시작하고, 끝나면 바로 다시 도전합니다.</h1>
             <p className="lead">
-              현재 모드는 <strong>{modeLabels[selectedMode]}</strong> 입니다.{" "}
-              {announcementSummary}
+              로그인 없이 <strong>{modeLabels[selectedMode]}</strong> 모드로 진입할 수 있습니다.
+              Daily Challenge와 랭킹은 보조 동기로 두고, 가장 먼저 눌러야 할 버튼은
+              `바로 시작`입니다.
             </p>
             <div className="cta-row">
               <button
@@ -553,9 +648,7 @@ export function GameClient() {
                 type="button"
                 className="cta-button"
                 data-testid="mode-button"
-                onClick={() =>
-                  setModeIndex((currentIndex) => (currentIndex + 1) % modeOrder.length)
-                }
+                onClick={() => setScreen("modeSelect")}
               >
                 모드 선택
               </button>
@@ -563,18 +656,29 @@ export function GameClient() {
                 type="button"
                 className="cta-button"
                 data-testid="ranking-button"
+                onClick={() => setScreen("ranking")}
               >
                 랭킹 보기
               </button>
             </div>
-            <p className="mode-caption">현재 선택: {modeLabels[selectedMode]}</p>
-            <p className="api-chip" data-testid="bootstrap-status">
-              {statusNotice}
+            <p className="mode-caption">
+              현재 빠른 시작 모드: <strong>{modeLabels[selectedMode]}</strong>
+            </p>
+            <p className="mode-caption">
+              오늘 공지: {announcementSummary}
             </p>
             <p className="api-chip" data-testid="analytics-last-event" aria-live="polite">
-              Latest analytics event: {lastTrackedEvent}
+              최근 활동: {lastTrackedEvent}
             </p>
             <div className="settings-row" data-testid="settings-row">
+              <button
+                type="button"
+                className="cta-button"
+                data-testid="settings-sheet-open"
+                onClick={() => setActiveSheet("settings")}
+              >
+                설정
+              </button>
               <button
                 type="button"
                 className="cta-button"
@@ -587,13 +691,41 @@ export function GameClient() {
             </div>
           </section>
 
-          <section className="card-grid" aria-label="development baseline">
-            {launchCards.map((card) => (
+          <section className="card-grid" aria-label="landing highlights">
+            {landingHighlights.map((card) => (
               <article key={card.title} className="info-card">
                 <h2>{card.title}</h2>
-                <p>{card.body}</p>
+                <p>{card.description}</p>
               </article>
             ))}
+          </section>
+
+          <section className="card-grid secondary-grid">
+            <article className="info-card" data-testid="daily-preview-card">
+              <h2>오늘의 목표</h2>
+              <p>
+                {bootstrapData.dailyChallenge?.ruleType === "line_target"
+                  ? `${bootstrapData.dailyChallenge.goalValue}라인을 제거해 보상을 받으세요.`
+                  : "오늘의 미션은 곧 공개됩니다."}
+              </p>
+              <div className="cta-row compact-row">
+                <button
+                  type="button"
+                  className="cta-button"
+                  data-testid="daily-detail-open"
+                  onClick={() => setActiveSheet("daily")}
+                >
+                  자세히 보기
+                </button>
+              </div>
+            </article>
+            <article className="info-card" data-testid="personal-best-card">
+              <h2>최근 성과</h2>
+              <p>
+                지금은 {modeLabels[selectedMode]} 빠른 시작이 기본입니다. 첫 3판 개인 최고
+                기록 강조 연출은 결과 화면에서 이어집니다.
+              </p>
+            </article>
           </section>
 
           <section className="info-card accessibility-panel" data-testid="accessibility-guide">
@@ -610,6 +742,159 @@ export function GameClient() {
         </>
       )}
 
+      {screen === "modeSelect" && (
+        <section className="mode-shell" data-testid="mode-screen">
+          <div className="hero-panel compact-hero">
+            <div className="section-header">
+              <button
+                type="button"
+                className="cta-button"
+                data-testid="mode-back-button"
+                onClick={() => setScreen("landing")}
+              >
+                뒤로가기
+              </button>
+              <div>
+                <p className="eyebrow">Mode Select</p>
+                <h1>지금 플레이할 모드를 고르세요.</h1>
+              </div>
+            </div>
+            <p className="lead">
+              세 모드의 차이를 빠르게 읽고 선택할 수 있게 카드형으로 정리했습니다.
+            </p>
+          </div>
+
+          <section className="mode-grid">
+            {modeOrder.map((mode) => (
+              <article
+                key={mode}
+                className={`info-card mode-card${selectedMode === mode ? " active" : ""}`}
+                data-testid={`mode-card-${mode}`}
+              >
+                <p className="eyebrow">{modeLabels[mode]}</p>
+                <h2>{modeDescriptions[mode].title}</h2>
+                <p>{modeDescriptions[mode].summary}</p>
+                <div className="mode-meta">
+                  <p>{modeDescriptions[mode].ending}</p>
+                  <p>{modeDescriptions[mode].ranking}</p>
+                </div>
+                <div className="cta-row">
+                  <button
+                    type="button"
+                    className="cta-button"
+                    onClick={() => setModeIndex(modeOrder.indexOf(mode))}
+                  >
+                    선택
+                  </button>
+                  <button
+                    type="button"
+                    className="cta-button primary"
+                    data-testid={`mode-start-button-${mode}`}
+                    onClick={() => {
+                      setModeIndex(modeOrder.indexOf(mode));
+                      void startGame(mode);
+                    }}
+                  >
+                    이 모드 시작
+                  </button>
+                </div>
+              </article>
+            ))}
+          </section>
+
+          <section className="info-card daily-spotlight">
+            <h2>Daily Challenge</h2>
+            <p>
+              오늘 목표: {bootstrapData.dailyChallenge?.title ?? "준비 중"}.
+              진행도 {bootstrapData.dailyChallenge?.myProgress.progressValue ?? 0} /
+              {bootstrapData.dailyChallenge?.goalValue ?? 0}
+            </p>
+            <div className="cta-row compact-row">
+              <button
+                type="button"
+                className="cta-button"
+                onClick={() => setActiveSheet("daily")}
+              >
+                상세 보기
+              </button>
+            </div>
+          </section>
+        </section>
+      )}
+
+      {screen === "ranking" && (
+        <section className="ranking-shell" data-testid="ranking-screen">
+          <div className="hero-panel compact-hero">
+            <div className="section-header">
+              <button
+                type="button"
+                className="cta-button"
+                onClick={() => setScreen("landing")}
+              >
+                뒤로가기
+              </button>
+              <div>
+                <p className="eyebrow">Ranking</p>
+                <h1>모드별 기록 흐름을 한눈에 확인합니다.</h1>
+              </div>
+            </div>
+            <div className="filter-row" role="tablist" aria-label="mode ranking tabs">
+              {modeOrder.map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  className={`chip-button${selectedMode === mode ? " active" : ""}`}
+                  data-testid={`ranking-tab-${mode}`}
+                  onClick={() => setModeIndex(modeOrder.indexOf(mode))}
+                >
+                  {modeLabels[mode]}
+                </button>
+              ))}
+            </div>
+            <div className="filter-row" role="tablist" aria-label="period tabs">
+              {rankingPeriods.map((period) => (
+                <button
+                  key={period}
+                  type="button"
+                  className={`chip-button${rankingPeriod === period ? " active" : ""}`}
+                  data-testid={`ranking-segment-${period}`}
+                  onClick={() => setRankingPeriod(period)}
+                >
+                  {rankingPeriodLabels[period]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <section className="card-grid secondary-grid">
+            <article className="info-card" data-testid="ranking-row-current">
+              <h2>내 기록</h2>
+              <p>
+                현재 모드 {modeLabels[selectedMode]} 기준 대표 값:{" "}
+                {formatPrimaryMetric(selectedMode, deferredGame)}
+              </p>
+              <p>범위: {rankingPeriodLabels[rankingPeriod]}</p>
+            </article>
+          </section>
+
+          <section className="ranking-list">
+            {rankingRows.map((row) => (
+              <article
+                key={`${row.rank}-${row.nickname}`}
+                className={`info-card ranking-row${row.highlighted ? " highlighted" : ""}`}
+              >
+                <strong>{row.rank}</strong>
+                <div>
+                  <h2>{row.nickname}</h2>
+                  <p>{row.metric}</p>
+                </div>
+                <span>{row.achievedAt}</span>
+              </article>
+            ))}
+          </section>
+        </section>
+      )}
+
       {screen === "playing" && deferredGame && (
         <section className="game-shell">
           <div className="play-panel">
@@ -618,7 +903,7 @@ export function GameClient() {
                 <p className="eyebrow">Now Playing</p>
                 <h1>{modeLabels[deferredGame.mode]}</h1>
                 <p className="session-meta" data-testid="session-id">
-                  Session: {sessionData?.sessionId ?? "로컬 세션"}
+                  목표 요약: {modeDescriptions[deferredGame.mode].ending}
                 </p>
               </div>
               <button
@@ -627,7 +912,7 @@ export function GameClient() {
                 data-testid="session-end-button"
                 onClick={() => applyAction("end")}
               >
-                세션 종료
+                나가기
               </button>
             </div>
 
@@ -717,10 +1002,10 @@ export function GameClient() {
                   </div>
                 </div>
                 <div className="hud-card">
-                  <span className="hud-label">Run Info</span>
-                  <p>Config Version: {sessionData?.configVersion ?? 1}</p>
-                  <p>Seed: {sessionData?.seed ?? "fallback-seed"}</p>
-                  <p>API: {apiReady ? "connected" : "fallback"}</p>
+                  <span className="hud-label">Goal</span>
+                  <p>{modeDescriptions[deferredGame.mode].summary}</p>
+                  <p>{modeDescriptions[deferredGame.mode].ranking}</p>
+                  <p>{apiReady ? "온라인 기록 준비 완료" : "로컬 플레이로 진행 중"}</p>
                 </div>
                 <div className="hud-card">
                   <span className="hud-label">Accessibility</span>
@@ -779,30 +1064,41 @@ export function GameClient() {
         <section className="result-shell">
           <div className="hero-panel result-panel">
             <p className="eyebrow">Run Result</p>
-            <h1>한 판이 종료되었습니다.</h1>
+            <h1>결과를 확인하고 바로 다시 도전하세요.</h1>
             <p className="lead">
-              종료 사유:{" "}
+              모드 {modeLabels[deferredGame.mode]} 종료. 종료 사유:{" "}
               {deferredGame.endedReason === "TOP_OUT"
                 ? "TOP OUT"
                 : "PLAYER EXIT"}
             </p>
 
+            <div className="daily-banner result-hero-metric" data-testid="result-hero-primary">
+              {deferredGame.mode === "SPRINT" ? "진행 라인" : "최종 점수"}:{" "}
+              {formatPrimaryMetric(deferredGame.mode, deferredGame)}
+            </div>
+
             <div className="result-grid">
               <article className="info-card">
-                <h2>Final Score</h2>
+                <h2>최종 점수</h2>
                 <p>{deferredGame.score}</p>
               </article>
               <article className="info-card">
-                <h2>Lines Cleared</h2>
+                <h2>제거 라인</h2>
                 <p>{deferredGame.linesCleared}</p>
               </article>
               <article className="info-card">
-                <h2>Pieces Locked</h2>
-                <p>{deferredGame.piecesLocked}</p>
+                <h2>최대 상태</h2>
+                <p>{deferredGame.lastPerfectClear ? "Perfect Clear" : `Combo ${deferredGame.comboCount}`}</p>
               </article>
             </div>
 
-            <div className="cta-row">
+            <div className="badge-row">
+              <span className="status-chip">랭킹 반영 대기</span>
+              {deferredGame.backToBackActive && <span className="status-chip">Back-to-Back</span>}
+              {deferredGame.lastPerfectClear && <span className="status-chip">Perfect Clear</span>}
+            </div>
+
+            <div className="cta-grid">
               <button
                 type="button"
                 className="cta-button primary"
@@ -814,9 +1110,14 @@ export function GameClient() {
                   void startGame(deferredGame.mode);
                 }}
               >
-                다시 시작
+                재도전
               </button>
-              <button type="button" className="cta-button" data-testid="result-ranking-button">
+              <button
+                type="button"
+                className="cta-button"
+                data-testid="result-ranking-button"
+                onClick={() => setScreen("ranking")}
+              >
                 랭킹
               </button>
               <button type="button" className="cta-button" data-testid="share-button">
@@ -826,16 +1127,132 @@ export function GameClient() {
                 type="button"
                 className="cta-button"
                 data-testid="save-record-button"
+                onClick={() => setActiveSheet("nickname")}
               >
                 기록 저장
               </button>
             </div>
 
             <div className="status-chip" data-testid="rank-status" aria-live="polite">
-              공식 기록 제출과 랭킹 연결은 D3에서 이어집니다.
+              공식 기록 제출과 랭킹 연결은 현재 모드 흐름에 맞춰 이어집니다.
             </div>
           </div>
         </section>
+      )}
+
+      {activeSheet && (
+        <div className="bottom-sheet-overlay" data-testid="bottom-sheet-overlay">
+          <section className="bottom-sheet" data-testid={`sheet-${activeSheet}`}>
+            <div className="section-header">
+              <div>
+                <p className="eyebrow">
+                  {activeSheet === "settings"
+                    ? "Settings"
+                    : activeSheet === "nickname"
+                      ? "Nickname"
+                      : "Daily Challenge"}
+                </p>
+                <h2>
+                  {activeSheet === "settings"
+                    ? "설정"
+                    : activeSheet === "nickname"
+                      ? "닉네임 등록"
+                      : "오늘의 Daily Challenge"}
+                </h2>
+              </div>
+              <button
+                type="button"
+                className="cta-button"
+                data-testid="sheet-close-button"
+                onClick={() => setActiveSheet(null)}
+              >
+                닫기
+              </button>
+            </div>
+
+            {activeSheet === "settings" && (
+              <div className="sheet-body">
+                <label className="sheet-field">
+                  <span>고대비 모드</span>
+                  <button
+                    type="button"
+                    className="cta-button"
+                    data-testid="sheet-contrast-toggle"
+                    aria-pressed={appSettings.highContrastMode}
+                    onClick={() => void toggleHighContrastMode()}
+                  >
+                    {appSettings.highContrastMode ? "끔" : "켬"}
+                  </button>
+                </label>
+                <label className="sheet-field">
+                  <span>사운드</span>
+                  <span>{appSettings.soundEnabled ? "활성" : "비활성"}</span>
+                </label>
+                <label className="sheet-field">
+                  <span>고스트 피스</span>
+                  <span>{appSettings.ghostPieceEnabled ? "표시" : "숨김"}</span>
+                </label>
+              </div>
+            )}
+
+            {activeSheet === "nickname" && (
+              <div className="sheet-body">
+                <label className="sheet-field text-field">
+                  <span>닉네임</span>
+                  <input
+                    value={nicknameValue}
+                    data-testid="nickname-input"
+                    placeholder="2자 이상 12자 이하"
+                    onChange={(event) => setNicknameValue(event.target.value)}
+                  />
+                </label>
+                <p className="sheet-copy">
+                  공식 기록 저장 시 사용할 닉네임입니다. 한글, 영문, 숫자, 밑줄을 권장합니다.
+                </p>
+                <div className="cta-row compact-row">
+                  <button
+                    type="button"
+                    className="cta-button primary"
+                    data-testid="nickname-save-button"
+                    onClick={() => setActiveSheet(null)}
+                  >
+                    저장
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeSheet === "daily" && (
+              <div className="sheet-body">
+                <p className="sheet-copy">
+                  목표: {bootstrapData.dailyChallenge?.title ?? "오늘의 목표 준비 중"}
+                </p>
+                <p className="sheet-copy">
+                  진행도 {bootstrapData.dailyChallenge?.myProgress.progressValue ?? 0} /
+                  {bootstrapData.dailyChallenge?.goalValue ?? 0}
+                </p>
+                <p className="sheet-copy">
+                  보상: {bootstrapData.dailyChallenge?.reward.rewardType ?? "badge"}{" "}
+                  {bootstrapData.dailyChallenge?.reward.rewardValue ?? 0}
+                </p>
+                <div className="cta-row compact-row">
+                  <button
+                    type="button"
+                    className="cta-button primary"
+                    data-testid="daily-sheet-start-button"
+                    onClick={() => {
+                      setActiveSheet(null);
+                      setModeIndex(modeOrder.indexOf("DAILY_CHALLENGE"));
+                      void startGame("DAILY_CHALLENGE");
+                    }}
+                  >
+                    도전 시작
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
       )}
     </main>
   );

@@ -40,6 +40,32 @@ test("P0-ADMIN-001 embedded admin preview exposes stable selectors", async ({
   );
 });
 
+test("P2-NAV-001 mode select and ranking shells stay reachable", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByTestId("settings-sheet-open").click();
+  await expect(page.getByTestId("sheet-settings")).toBeVisible();
+  await page.getByTestId("sheet-close-button").click();
+
+  await page.getByTestId("daily-detail-open").click();
+  await expect(page.getByTestId("sheet-daily")).toBeVisible();
+  await page.getByTestId("sheet-close-button").click();
+
+  await page.getByTestId("mode-button").click();
+  await expect(page.getByTestId("mode-screen")).toBeVisible();
+  await expect(page.getByTestId("mode-card-MARATHON")).toContainText("Marathon");
+  await expect(page.getByTestId("mode-card-SPRINT")).toContainText("Sprint");
+
+  await page.getByTestId("mode-back-button").click();
+  await expect(page.getByTestId("start-button")).toBeVisible();
+
+  await page.getByTestId("ranking-button").click();
+  await expect(page.getByTestId("ranking-screen")).toBeVisible();
+  await expect(page.getByTestId("ranking-tab-MARATHON")).toBeVisible();
+  await expect(page.getByTestId("ranking-segment-daily")).toBeVisible();
+  await expect(page.getByTestId("ranking-row-current")).toContainText("내 기록");
+});
+
 test("P1-GAME-001 start, finish, and retry loops stay interactive", async ({
   page
 }) => {
@@ -61,7 +87,12 @@ test("P1-GAME-001 start, finish, and retry loops stay interactive", async ({
   await expect(page.getByTestId("result-ranking-button")).toBeVisible();
   await expect(page.getByTestId("share-button")).toBeVisible();
   await expect(page.getByTestId("save-record-button")).toBeVisible();
-  await expect(page.getByTestId("rank-status")).toContainText("D3");
+  await expect(page.getByTestId("rank-status")).toContainText("랭킹");
+
+  await page.getByTestId("save-record-button").click();
+  await expect(page.getByTestId("sheet-nickname")).toBeVisible();
+  await page.getByTestId("nickname-input").fill("guest_runner");
+  await page.getByTestId("nickname-save-button").click();
 
   await page.getByTestId("retry-button").click();
   await expect(page.getByTestId("tutorial-overlay")).toHaveCount(0);

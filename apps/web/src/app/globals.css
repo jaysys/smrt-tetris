@@ -112,6 +112,17 @@ select:focus-visible {
   margin-top: 24px;
 }
 
+.cta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.compact-row {
+  margin-top: 16px;
+}
+
 .cta-button,
 .touch-button {
   border: 1px solid rgba(29, 26, 22, 0.16);
@@ -147,6 +158,13 @@ select:focus-visible {
   margin-top: 18px;
 }
 
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .card-grid,
 .result-grid {
   display: grid;
@@ -159,6 +177,10 @@ select:focus-visible {
 .hud-card {
   padding: 22px;
   background: linear-gradient(180deg, var(--surface-strong), var(--surface));
+}
+
+.secondary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .info-card h2,
@@ -175,8 +197,143 @@ select:focus-visible {
 }
 
 .game-shell,
-.result-shell {
+.result-shell,
+.mode-shell,
+.ranking-shell {
   padding-top: 8px;
+}
+
+.compact-hero h1 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+.mode-grid,
+.ranking-list {
+  display: grid;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.mode-card {
+  display: grid;
+  gap: 12px;
+}
+
+.mode-card.active {
+  border-color: rgba(202, 90, 46, 0.35);
+  box-shadow: 0 18px 40px rgba(159, 61, 24, 0.12);
+}
+
+.mode-meta {
+  display: grid;
+  gap: 8px;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.chip-button {
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 1px solid rgba(29, 26, 22, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 249, 240, 0.88);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.chip-button.active {
+  background: var(--accent);
+  color: #fff8f2;
+  border-color: transparent;
+}
+
+.ranking-row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.ranking-row strong,
+.ranking-row span {
+  color: var(--muted);
+}
+
+.ranking-row.highlighted {
+  border-color: rgba(202, 90, 46, 0.35);
+  background: linear-gradient(180deg, rgba(255, 247, 240, 0.96), rgba(255, 241, 231, 0.92));
+}
+
+.daily-spotlight,
+.result-hero-metric {
+  margin-top: 24px;
+}
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.bottom-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(24, 22, 21, 0.42);
+  z-index: 30;
+}
+
+.bottom-sheet {
+  width: min(100%, 720px);
+  border: 1px solid var(--line);
+  border-radius: 28px 28px 0 0;
+  padding: 24px;
+  background: var(--surface-strong);
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.sheet-body {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.sheet-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+
+.sheet-field.text-field {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.sheet-field input {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid rgba(29, 26, 22, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--text);
+}
+
+.sheet-copy {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .play-header {
@@ -395,8 +552,10 @@ select:focus-visible {
 @media (max-width: 840px) {
   .card-grid,
   .result-grid,
+  .secondary-grid,
   .side-panel,
-  .touch-controls {
+  .touch-controls,
+  .cta-grid {
     grid-template-columns: 1fr;
   }
 
@@ -406,7 +565,9 @@ select:focus-visible {
   }
 
   .cta-row,
-  .play-header {
+  .play-header,
+  .section-header,
+  .ranking-row {
     flex-direction: column;
     align-items: stretch;
   }
@@ -415,7 +576,8 @@ select:focus-visible {
   .info-card,
   .hud-card,
   .play-panel,
-  .result-panel {
+  .result-panel,
+  .bottom-sheet {
     border-radius: 22px;
   }
 }
@@ -475,8 +637,14 @@ select:focus-visible {
     margin-top: 18px;
   }
 
+  .bottom-sheet {
+    padding: 18px;
+    border-radius: 24px 24px 0 0;
+  }
+
   .touch-button,
-  .cta-button {
+  .cta-button,
+  .chip-button {
     padding: 11px 14px;
   }
 
@@ -493,5 +661,10 @@ select:focus-visible {
 
   .result-grid .info-card p {
     font-size: 1.5rem;
+  }
+
+  .ranking-row {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 }

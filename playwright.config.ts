@@ -34,7 +34,7 @@ export default defineConfig({
   webServer: {
     command: "pnpm --dir apps/web run build && pnpm --dir apps/web run start:e2e",
     url: "http://127.0.0.1:3110",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120000
   }
 });

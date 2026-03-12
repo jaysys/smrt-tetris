@@ -11,6 +11,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   effectLevel: "normal",
   ghostPieceEnabled: true,
   highContrastMode: false,
+  guideOverlayEnabled: true,
   themeId: "default"
 };
 

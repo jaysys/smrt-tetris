@@ -19,6 +19,7 @@ import {
 } from "./board";
 import type {
   ActivePiece,
+  GameChallengeRule,
   GameOptions,
   GameSnapshot,
   QueueGenerator,
@@ -38,11 +39,13 @@ export class TetrisGame {
   private score = 0;
   private linesCleared = 0;
   private level = 1;
+  private durationMs = 0;
   private piecesLocked = 0;
   private lastClearCount = 0;
   private comboCount = -1;
   private backToBackActive = false;
   private lastPerfectClear = false;
+  private readonly dailyChallenge: GameChallengeRule | null;
   private status: GameSnapshot["status"] = "playing";
   private endedReason: GameSnapshot["endedReason"] = null;
 
@@ -51,6 +54,8 @@ export class TetrisGame {
       options.queueGenerator ?? new SevenBagGenerator(options.randomSource);
     this.board = options.board ?? createBoard();
     this.mode = options.mode ?? "MARATHON";
+    this.dailyChallenge = options.dailyChallenge ?? null;
+    this.applyInitialStats(options);
     this.activePiece = this.spawnNextPiece();
   }
 
@@ -67,11 +72,15 @@ export class TetrisGame {
       score: this.score,
       linesCleared: this.linesCleared,
       level: this.level,
+      durationMs: this.durationMs,
       piecesLocked: this.piecesLocked,
       lastClearCount: this.lastClearCount,
       comboCount: Math.max(this.comboCount, 0),
       backToBackActive: this.backToBackActive,
       lastPerfectClear: this.lastPerfectClear,
+      targetValue: this.resolveTargetValue(),
+      progressValue: this.resolveProgressValue(),
+      challengeCompleted: this.endedReason === "GOAL_COMPLETE",
       endedReason: this.endedReason
     };
   }
@@ -104,15 +113,17 @@ export class TetrisGame {
     return this.getState();
   }
 
-  softDrop() {
+  softDrop(elapsedMs = 0) {
     if (this.status === "game_over") {
       return this.getState();
     }
 
+    this.durationMs += Math.max(0, elapsedMs);
     const moved = this.tryAdvance(1);
 
     if (moved) {
       this.score += 1;
+      this.applyGoalChecks();
       return this.getState();
     }
 
@@ -136,12 +147,14 @@ export class TetrisGame {
     return this.getState();
   }
 
-  tick() {
+  tick(elapsedMs = getGravityIntervalMs(this.mode, this.level)) {
     if (this.status === "game_over") {
       return this.getState();
     }
 
+    this.durationMs += Math.max(0, elapsedMs);
     if (this.tryAdvance(1)) {
+      this.applyGoalChecks();
       return this.getState();
     }
 
@@ -151,6 +164,11 @@ export class TetrisGame {
 
   hold() {
     if (!this.activePiece || !this.canHold || this.status === "game_over") {
+      return this.getState();
+    }
+
+    if (this.mode === "DAILY_CHALLENGE" && this.dailyChallenge?.ruleType === "no_hold") {
+      this.failRun("RULE_VIOLATION");
       return this.getState();
     }
 
@@ -205,6 +223,13 @@ export class TetrisGame {
     this.piecesLocked += 1;
     this.canHold = true;
     this.applyClearOutcome(clearResult.clearedLineCount);
+    this.applyGoalChecks();
+
+    if (this.status === "game_over") {
+      this.activePiece = null;
+      return;
+    }
+
     this.activePiece = this.spawnNextPiece();
   }
 
@@ -224,6 +249,24 @@ export class TetrisGame {
     }
 
     return piece;
+  }
+
+  private applyInitialStats(options: GameOptions) {
+    const initialStats = options.initialStats;
+
+    if (!initialStats) {
+      return;
+    }
+
+    this.score = initialStats.score ?? this.score;
+    this.linesCleared = initialStats.linesCleared ?? this.linesCleared;
+    this.level = initialStats.level ?? this.level;
+    this.durationMs = initialStats.durationMs ?? this.durationMs;
+    this.piecesLocked = initialStats.piecesLocked ?? this.piecesLocked;
+    this.comboCount = initialStats.comboCount ?? this.comboCount;
+    this.backToBackActive = initialStats.backToBackActive ?? this.backToBackActive;
+    this.lastPerfectClear = initialStats.lastPerfectClear ?? this.lastPerfectClear;
+    this.level = this.resolveLevel();
   }
 
   private getGhostPiece() {
@@ -293,6 +336,86 @@ export class TetrisGame {
     }
 
     return Math.floor(this.linesCleared / 10) + 1;
+  }
+
+  private resolveTargetValue() {
+    if (this.mode === "SPRINT") {
+      return 40;
+    }
+
+    if (this.mode === "DAILY_CHALLENGE") {
+      return this.dailyChallenge?.goalValue ?? null;
+    }
+
+    return null;
+  }
+
+  private resolveProgressValue() {
+    if (this.mode === "SPRINT") {
+      return Math.min(this.linesCleared, 40);
+    }
+
+    if (this.mode !== "DAILY_CHALLENGE" || !this.dailyChallenge) {
+      return null;
+    }
+
+    switch (this.dailyChallenge.ruleType) {
+      case "line_target":
+      case "no_hold":
+        return this.linesCleared;
+      case "score_target":
+        return this.score;
+      case "time_attack":
+        return this.durationMs;
+      default:
+        return null;
+    }
+  }
+
+  private applyGoalChecks() {
+    if (this.status === "game_over") {
+      return;
+    }
+
+    if (this.mode === "SPRINT" && this.linesCleared >= 40) {
+      this.completeRun();
+      return;
+    }
+
+    if (this.mode !== "DAILY_CHALLENGE" || !this.dailyChallenge) {
+      return;
+    }
+
+    switch (this.dailyChallenge.ruleType) {
+      case "line_target":
+      case "no_hold":
+        if (this.linesCleared >= this.dailyChallenge.goalValue) {
+          this.completeRun();
+        }
+        break;
+      case "score_target":
+        if (this.score >= this.dailyChallenge.goalValue) {
+          this.completeRun();
+        }
+        break;
+      case "time_attack":
+        if (this.durationMs >= this.dailyChallenge.goalValue) {
+          this.completeRun();
+        }
+        break;
+    }
+  }
+
+  private completeRun() {
+    this.status = "game_over";
+    this.endedReason = "GOAL_COMPLETE";
+  }
+
+  private failRun(
+    reason: Exclude<GameSnapshot["endedReason"], "GOAL_COMPLETE" | "TOP_OUT" | null>
+  ) {
+    this.status = "game_over";
+    this.endedReason = reason;
   }
 }
 

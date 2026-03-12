@@ -13,7 +13,13 @@ export type RotationTransition =
 export type BoardCell = TetrominoType | null;
 export type GameMode = "MARATHON" | "SPRINT" | "DAILY_CHALLENGE";
 export type GameStatus = "playing" | "game_over";
-export type EndedReason = "TOP_OUT" | "PLAYER_EXIT" | null;
+export type EndedReason =
+  | "TOP_OUT"
+  | "PLAYER_EXIT"
+  | "GOAL_COMPLETE"
+  | "TIME_LIMIT"
+  | "RULE_VIOLATION"
+  | null;
 
 export type RandomSource = () => number;
 
@@ -64,12 +70,32 @@ export interface GameSnapshot {
   score: number;
   linesCleared: number;
   level: number;
+  durationMs: number;
   piecesLocked: number;
   lastClearCount: number;
   comboCount: number;
   backToBackActive: boolean;
   lastPerfectClear: boolean;
+  targetValue: number | null;
+  progressValue: number | null;
+  challengeCompleted: boolean;
   endedReason: EndedReason;
+}
+
+export interface GameChallengeRule {
+  ruleType: "score_target" | "line_target" | "no_hold" | "time_attack";
+  goalValue: number;
+}
+
+export interface InitialGameStats {
+  score?: number;
+  linesCleared?: number;
+  level?: number;
+  durationMs?: number;
+  piecesLocked?: number;
+  comboCount?: number;
+  backToBackActive?: boolean;
+  lastPerfectClear?: boolean;
 }
 
 export interface GameOptions {
@@ -77,4 +103,6 @@ export interface GameOptions {
   randomSource?: RandomSource;
   queueGenerator?: QueueGenerator;
   board?: BoardState;
+  dailyChallenge?: GameChallengeRule | null;
+  initialStats?: InitialGameStats;
 }

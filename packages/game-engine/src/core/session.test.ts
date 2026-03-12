@@ -35,6 +35,22 @@ function lockPieceByGravity(game: TetrisGame) {
   return game.getState();
 }
 
+function createWellBoard(rowStart: number, rowEndExclusive: number, gapX: number) {
+  let board = createBoard();
+
+  for (let y = rowStart; y < rowEndExclusive; y += 1) {
+    for (let x = 0; x < 10; x += 1) {
+      if (x === gapX) {
+        continue;
+      }
+
+      board = setBoardCell(board, { x, y }, "O");
+    }
+  }
+
+  return board;
+}
+
 describe("tetris game session", () => {
   it("creates a playable snapshot with hold and next queue", () => {
     const game = new TetrisGame();
@@ -169,5 +185,68 @@ describe("tetris game session", () => {
     const sprintRun = new TetrisGame({ mode: "SPRINT" });
 
     expect(sprintRun.getState().level).toBe(1);
+  });
+
+  it("does not award soft drop score for gravity ticks", () => {
+    const game = new TetrisGame();
+    const before = game.getState();
+
+    const afterTick = game.tick(800);
+
+    expect(afterTick.score).toBe(before.score);
+    expect(afterTick.durationMs).toBe(800);
+  });
+
+  it("completes sprint when the 40th line is cleared", () => {
+    const board = createWellBoard(16, 20, 4);
+    const sprintRun = new TetrisGame({
+      mode: "SPRINT",
+      board,
+      initialStats: {
+        linesCleared: 36,
+        durationMs: 90_000
+      },
+      queueGenerator: new StaticQueueGenerator(["I", "O", "T", "S", "Z", "J", "L"])
+    });
+
+    sprintRun.rotate("CW");
+    sprintRun.moveHorizontal(-1);
+    const result = lockPieceByGravity(sprintRun);
+
+    expect(result.linesCleared).toBe(40);
+    expect(result.status).toBe("game_over");
+    expect(result.endedReason).toBe("GOAL_COMPLETE");
+    expect(result.progressValue).toBe(40);
+    expect(result.targetValue).toBe(40);
+  });
+
+  it("completes daily challenge when the line target is reached", () => {
+    let board = createBoard();
+
+    for (const x of [0, 1, 2, 7, 8, 9]) {
+      board = setBoardCell(board, { x, y: 19 }, "O");
+    }
+
+    const dailyRun = new TetrisGame({
+      mode: "DAILY_CHALLENGE",
+      board,
+      dailyChallenge: {
+        ruleType: "line_target",
+        goalValue: 12
+      },
+      initialStats: {
+        linesCleared: 11
+      },
+      queueGenerator: new StaticQueueGenerator(["I", "O", "T", "S", "Z", "J", "L"])
+    });
+
+    const result = lockPieceByGravity(dailyRun);
+
+    expect(result.linesCleared).toBe(12);
+    expect(result.status).toBe("game_over");
+    expect(result.endedReason).toBe("GOAL_COMPLETE");
+    expect(result.challengeCompleted).toBe(true);
+    expect(result.progressValue).toBe(12);
+    expect(result.targetValue).toBe(12);
   });
 });

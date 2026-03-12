@@ -28,6 +28,7 @@ export interface UserSettings {
   effectLevel: EffectLevel;
   ghostPieceEnabled: boolean;
   highContrastMode: boolean;
+  guideOverlayEnabled: boolean;
   themeId: string;
 }
 

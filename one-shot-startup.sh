@@ -25,6 +25,20 @@ require_command() {
   fi
 }
 
+require_pnpm_exec() {
+  local executable="$1"
+
+  if pnpm exec "${executable}" --version >/dev/null 2>&1; then
+    return 0
+  fi
+
+  echo "Missing required local executable: ${executable}" >&2
+  echo "Install workspace dependencies first:" >&2
+  echo "  pnpm install --frozen-lockfile" >&2
+  echo "If you installed with production-only dependencies, reinstall without NODE_ENV=production." >&2
+  exit 1
+}
+
 pid_is_running() {
   local pid="$1"
   kill -0 "${pid}" >/dev/null 2>&1
@@ -131,14 +145,23 @@ trap cleanup_on_error EXIT
 
 require_command pnpm
 require_command curl
+require_pnpm_exec turbo
 
 ensure_not_running "Web server" "${WEB_PID_FILE}"
 ensure_not_running "API server" "${API_PID_FILE}"
 
 echo "Building production artifacts for web and api..."
-NEXT_PUBLIC_API_BASE_URL="${API_BASE_URL}" \
+if ! NEXT_PUBLIC_API_BASE_URL="${API_BASE_URL}" \
   pnpm exec turbo run build --concurrency=1 --filter=@tetris/web --filter=@tetris/api \
-  >"${LOG_DIR}/build.log" 2>&1
+  >"${LOG_DIR}/build.log" 2>&1; then
+  echo "Build failed." >&2
+  if grep -Fq 'Command "turbo" not found' "${LOG_DIR}/build.log"; then
+    echo "The local turbo binary is missing. Reinstall dependencies with:" >&2
+    echo "  pnpm install --frozen-lockfile" >&2
+  fi
+  tail_log "${LOG_DIR}/build.log"
+  exit 1
+fi
 
 if [ ! -f "${ROOT_DIR}/apps/web/.next/BUILD_ID" ]; then
   echo "Missing Next.js production build output." >&2

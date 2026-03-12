@@ -542,11 +542,13 @@ export function GameClient() {
   const [softDropActive, setSoftDropActive] = useState(false);
   const [apiReady, setApiReady] = useState(false);
   const [lastTrackedEvent, setLastTrackedEvent] = useState("none");
+  const [bootstrapResolved, setBootstrapResolved] = useState(false);
   const [playScale, setPlayScale] = useState(1);
   const [playViewportHeight, setPlayViewportHeight] = useState<number | null>(null);
   const engineRef = useRef<TetrisGame | null>(null);
   const hasTrackedLandingView = useRef(false);
   const hasTrackedGameFinish = useRef(false);
+  const hasAutoStartedInitialGame = useRef(false);
   const playViewportRef = useRef<HTMLDivElement | null>(null);
   const playScaleFrameRef = useRef<HTMLDivElement | null>(null);
   const deferredGame = useDeferredValue(game);
@@ -615,7 +617,7 @@ export function GameClient() {
     setAnnouncementSummary(
       bootstrap.announcements[0]?.title ?? "공지 요약은 D3에서 확장됩니다."
     );
-    setModeIndex(modeOrder.indexOf(bootstrap.defaultMode));
+    setModeIndex(modeOrder.indexOf("MARATHON"));
     setStatusNotice(
       bootstrap.guestToken === defaultBootstrap.guestToken
         ? "API 미기동 상태라 로컬 fallback으로 플레이합니다."
@@ -625,15 +627,26 @@ export function GameClient() {
     if (!hasTrackedLandingView.current) {
       hasTrackedLandingView.current = true;
       pushAnalyticsEvent("landing_view", {
-        mode: bootstrap.defaultMode,
+        mode: "MARATHON",
         api_connected: bootstrap.guestToken !== defaultBootstrap.guestToken
       });
     }
+
+    setBootstrapResolved(true);
   }
 
   useEffect(() => {
     void bootstrapLanding();
   }, []);
+
+  useEffect(() => {
+    if (!bootstrapResolved || hasAutoStartedInitialGame.current) {
+      return;
+    }
+
+    hasAutoStartedInitialGame.current = true;
+    void startGame("MARATHON");
+  }, [bootstrapResolved]);
 
   async function updateAppSettings(patch: Partial<UserSettings>) {
     const nextSettings = {
@@ -683,6 +696,11 @@ export function GameClient() {
       setTutorialStepIndex(0);
       setTutorialOpen(true);
     }
+  }
+
+  function openLandingMenu() {
+    setTutorialOpen(false);
+    setScreen("landing");
   }
 
   function closeTutorial() {
@@ -1328,14 +1346,24 @@ export function GameClient() {
                       목표 요약: {modeDescriptions[deferredGame.mode].ending}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    className={ctaButtonClass("utility")}
-                    data-testid="session-end-button"
-                    onClick={() => applyAction("end")}
-                  >
-                    나가기
-                  </button>
+                  <div className="play-header-actions">
+                    <button
+                      type="button"
+                      className={ctaButtonClass("utility")}
+                      data-testid="play-menu-button"
+                      onClick={openLandingMenu}
+                    >
+                      메뉴
+                    </button>
+                    <button
+                      type="button"
+                      className={ctaButtonClass("utility")}
+                      data-testid="session-end-button"
+                      onClick={() => applyAction("end")}
+                    >
+                      나가기
+                    </button>
+                  </div>
                 </div>
 
                 {tutorialOpen && (

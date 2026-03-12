@@ -1135,6 +1135,12 @@ select:focus-visible {
   align-items: center;
 }
 
+.play-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
 .game-layout {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr) 220px;
@@ -1450,6 +1456,7 @@ select:focus-visible {
 
   .cta-row,
   .play-header,
+  .play-header-actions,
   .control-deck-header,
   .section-header,
   .ranking-row {

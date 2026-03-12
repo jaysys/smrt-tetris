@@ -1,10 +1,34 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-test("P0-LANDING-001 landing baseline exposes stable CTA selectors", async ({
-  page
-}, testInfo) => {
+async function reachInitialGame(page: Page) {
+  await expect
+    .poll(async () => {
+      if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
+        return "tutorial";
+      }
+
+      if ((await page.getByTestId("session-end-button").count()) > 0) {
+        return "game";
+      }
+
+      return "none";
+    })
+    .not.toBe("none");
+
+  if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
+    await page.getByTestId("tutorial-skip-button").click();
+  }
+}
+
+async function openLandingFromGame(page: Page) {
+  await reachInitialGame(page);
+  await page.getByTestId("play-menu-button").click();
+  await expect(page.getByTestId("start-button")).toBeVisible();
+}
+
+test("P0-HOME-001 home boots directly into marathon play", async ({ page }, testInfo) => {
   const consoleLines: string[] = [];
 
   page.on("console", (message) => {
@@ -12,12 +36,13 @@ test("P0-LANDING-001 landing baseline exposes stable CTA selectors", async ({
   });
 
   await page.goto("/");
+  await reachInitialGame(page);
 
-  await expect(page.getByTestId("daily-banner")).toContainText("오늘의 챌린지");
-  await expect(page.getByTestId("start-button")).toHaveText("바로 시작");
-  await expect(page.getByTestId("mode-button")).toHaveText("모드 선택");
-  await expect(page.getByTestId("ranking-button")).toHaveText("랭킹 보기");
-  await expect(page.getByTestId("analytics-last-event")).toContainText("landing_view");
+  await expect(
+    page.getByTestId("play-viewport").getByRole("heading", { name: "Marathon" })
+  ).toBeVisible();
+  await expect(page.getByTestId("session-end-button")).toHaveText("나가기");
+  await expect(page.getByTestId("play-menu-button")).toHaveText("메뉴");
 
   const consoleLogPath = testInfo.outputPath("console.log");
   mkdirSync(dirname(consoleLogPath), { recursive: true });
@@ -42,6 +67,7 @@ test("P0-ADMIN-001 embedded admin preview exposes stable selectors", async ({
 
 test("P2-NAV-001 mode select and ranking shells stay reachable", async ({ page }) => {
   await page.goto("/");
+  await openLandingFromGame(page);
 
   await page.getByTestId("settings-sheet-open").click();
   await expect(page.getByTestId("sheet-settings")).toBeVisible();
@@ -74,6 +100,7 @@ test("P1-MOBILE-001 landing and result keep critical CTAs above the fold at 360x
 }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/");
+  await openLandingFromGame(page);
 
   const landingButtons = [
     page.getByTestId("start-button"),
@@ -89,25 +116,6 @@ test("P1-MOBILE-001 landing and result keep critical CTAs above the fold at 360x
   }
 
   await page.getByTestId("start-button").click();
-
-  await expect
-    .poll(async () => {
-      if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
-        return "tutorial";
-      }
-
-      if ((await page.getByTestId("session-end-button").count()) > 0) {
-        return "game";
-      }
-
-      return "none";
-    })
-    .not.toBe("none");
-
-  if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
-    await page.getByTestId("tutorial-skip-button").click();
-  }
-
   await page.getByTestId("session-end-button").click({ force: true });
 
   const resultButtons = [
@@ -143,25 +151,7 @@ test("P1-PLAY-001 game HUD, board, and touch dock stay within one mobile viewpor
   for (const viewport of viewports) {
     await page.setViewportSize(viewport);
     await page.goto("/");
-    await page.getByTestId("start-button").click();
-
-    await expect
-      .poll(async () => {
-        if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
-          return "tutorial";
-        }
-
-        if ((await page.getByTestId("touch-controls").count()) > 0) {
-          return "game";
-        }
-
-        return "none";
-      })
-      .not.toBe("none");
-
-    if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
-      await page.getByTestId("tutorial-skip-button").click();
-    }
+    await reachInitialGame(page);
 
     const required = [
       page.getByTestId("score-value"),
@@ -182,8 +172,6 @@ test("P1-GAME-001 start, finish, and retry loops stay interactive", async ({
   page
 }) => {
   await page.goto("/");
-
-  await page.getByTestId("start-button").click();
 
   const tutorialOverlay = page.getByTestId("tutorial-overlay");
   const gameCanvas = page.getByTestId("game-canvas");
@@ -239,7 +227,6 @@ test("P1-GAME-001 start, finish, and retry loops stay interactive", async ({
   expect(trackedEvents).toEqual(
     expect.arrayContaining([
       "landing_view",
-      "quick_start_click",
       "game_finish",
       "retry_click"
     ])
@@ -251,6 +238,7 @@ test("P2-MODE-001 sprint and daily runs expose mode-specific HUD metrics", async
   page
 }) => {
   await page.goto("/");
+  await openLandingFromGame(page);
 
   await page.getByTestId("mode-button").click();
   await page.getByTestId("mode-start-button-SPRINT").click();
@@ -279,6 +267,7 @@ test("P2-MODE-001 sprint and daily runs expose mode-specific HUD metrics", async
   await expect(page.getByTestId("result-hero-primary")).toContainText("완주 기록");
 
   await page.goto("/");
+  await openLandingFromGame(page);
   await page.getByTestId("mode-button").click();
   await page.getByTestId("mode-start-button-DAILY_CHALLENGE").click();
 

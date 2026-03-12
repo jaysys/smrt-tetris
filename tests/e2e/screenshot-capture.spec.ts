@@ -14,6 +14,26 @@ async function capture(page: Parameters<typeof test>[0]["page"], name: string) {
 
 test("CAPTURE-001 major screens", async ({ page }) => {
   await page.goto("/");
+
+  await expect
+    .poll(async () => {
+      if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
+        return "tutorial";
+      }
+
+      if ((await page.getByTestId("game-canvas").count()) > 0) {
+        return "game";
+      }
+
+      return "none";
+    })
+    .not.toBe("none");
+
+  if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
+    await page.getByTestId("tutorial-skip-button").click();
+  }
+
+  await page.getByTestId("play-menu-button").click();
   await expect(page.getByTestId("start-button")).toBeVisible();
   await capture(page, "01-landing.png");
 
@@ -39,8 +59,6 @@ test("CAPTURE-001 major screens", async ({ page }) => {
 
   await page.getByRole("button", { name: "뒤로가기" }).click();
   await page.getByTestId("start-button").click();
-  await expect(page.getByTestId("tutorial-overlay")).toBeVisible();
-  await page.getByTestId("tutorial-skip-button").click();
   await expect(page.getByTestId("game-canvas")).toBeVisible();
   await capture(page, "06-playing.png");
 

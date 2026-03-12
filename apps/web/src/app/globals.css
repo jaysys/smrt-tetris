@@ -52,6 +52,21 @@ body {
   font-family: Georgia, "Times New Roman", serif;
 }
 
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -48px;
+  z-index: 1000;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #fff8f2;
+  color: #101631;
+}
+
+.skip-link:focus {
+  top: 16px;
+}
+
 button,
 input,
 select {
@@ -729,6 +744,48 @@ select:focus-visible {
   color: var(--muted);
 }
 
+.seo-shell {
+  display: grid;
+  gap: 24px;
+  padding-top: 8px;
+  padding-bottom: 80px;
+}
+
+.seo-panel h2,
+.seo-card h3,
+.faq-item h3 {
+  margin: 0;
+}
+
+.seo-card-grid {
+  margin-top: 0;
+}
+
+.seo-card {
+  display: grid;
+  gap: 12px;
+}
+
+.faq-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.faq-list {
+  display: grid;
+  gap: 16px;
+}
+
+.faq-item {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.faq-item:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
 .mono-note {
   font-family: "SFMono-Regular", ui-monospace, monospace;
   font-size: 0.92rem;
@@ -1183,6 +1240,12 @@ select:focus-visible {
   background: #c75959;
 }
 
+.board-cell[data-tone="ghost"][data-piece] {
+  background: rgba(246, 248, 255, 0.16);
+  border-color: rgba(246, 248, 255, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(246, 248, 255, 0.06);
+}
+
 .next-queue {
   display: grid;
   gap: 10px;
@@ -1425,7 +1488,7 @@ select:focus-visible {
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 420px), (max-height: 760px) {
   .page-shell.screen-playing {
     width: calc(100% - 10px);
     padding: calc(8px + var(--safe-top)) 0 calc(8px + var(--safe-bottom));

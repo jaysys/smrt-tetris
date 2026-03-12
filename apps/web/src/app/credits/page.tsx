@@ -1,3 +1,13 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Credits",
+  robots: {
+    index: false,
+    follow: true
+  }
+};
+
 const approvedSources = [
   {
     name: "Heroicons",

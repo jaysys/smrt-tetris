@@ -25,6 +25,18 @@ require_command() {
   fi
 }
 
+print_install_hint() {
+  local install_command="pnpm install --no-frozen-lockfile"
+
+  if [ -f "${ROOT_DIR}/pnpm-lock.yaml" ]; then
+    install_command="pnpm install --frozen-lockfile"
+  fi
+
+  echo "Install workspace dependencies first:" >&2
+  echo "  ${install_command}" >&2
+  echo "If you installed with production-only dependencies, reinstall without NODE_ENV=production." >&2
+}
+
 require_pnpm_exec() {
   local executable="$1"
 
@@ -33,9 +45,7 @@ require_pnpm_exec() {
   fi
 
   echo "Missing required local executable: ${executable}" >&2
-  echo "Install workspace dependencies first:" >&2
-  echo "  pnpm install --frozen-lockfile" >&2
-  echo "If you installed with production-only dependencies, reinstall without NODE_ENV=production." >&2
+  print_install_hint
   exit 1
 }
 
@@ -156,8 +166,8 @@ if ! NEXT_PUBLIC_API_BASE_URL="${API_BASE_URL}" \
   >"${LOG_DIR}/build.log" 2>&1; then
   echo "Build failed." >&2
   if grep -Fq 'Command "turbo" not found' "${LOG_DIR}/build.log"; then
-    echo "The local turbo binary is missing. Reinstall dependencies with:" >&2
-    echo "  pnpm install --frozen-lockfile" >&2
+    echo "The local turbo binary is missing." >&2
+    print_install_hint
   fi
   tail_log "${LOG_DIR}/build.log"
   exit 1

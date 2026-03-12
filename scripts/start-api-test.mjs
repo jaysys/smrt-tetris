@@ -6,7 +6,7 @@ const child = spawn("pnpm", ["--dir", "apps/api", "start"], {
     ...process.env,
     TEST_MODE: "true",
     HOST: process.env.HOST ?? "127.0.0.1",
-    PORT: process.env.PORT ?? "3001"
+    PORT: process.env.PORT ?? "60040"
   },
   stdio: "inherit"
 });

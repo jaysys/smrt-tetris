@@ -133,8 +133,15 @@ test("P1-MOBILE-001 landing and result keep critical CTAs above the fold at 360x
 test("P1-PLAY-001 game HUD, board, and touch dock stay within one mobile viewport", async ({
   page
 }) => {
-  for (const viewportHeight of [800, 720, 680]) {
-    await page.setViewportSize({ width: 360, height: viewportHeight });
+  const viewports = [
+    { width: 360, height: 800 },
+    { width: 360, height: 720 },
+    { width: 360, height: 680 },
+    { width: 540, height: 680 }
+  ];
+
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
     await page.goto("/");
     await page.getByTestId("start-button").click();
 
@@ -167,7 +174,7 @@ test("P1-PLAY-001 game HUD, board, and touch dock stay within one mobile viewpor
       await expect(locator).toBeVisible();
       const box = await locator.boundingBox();
       expect(box).not.toBeNull();
-      expect(box!.y + box!.height).toBeLessThanOrEqual(viewportHeight);
+      expect(box!.y + box!.height).toBeLessThanOrEqual(viewport.height);
     }
   }
 });

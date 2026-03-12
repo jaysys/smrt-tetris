@@ -3,11 +3,11 @@
   "private": true,
   "packageManager": "pnpm@9.7.1",
   "scripts": {
-    "dev": "turbo run dev --parallel",
+    "dev": "turbo run dev --parallel --filter=@tetris/web --filter=@tetris/api",
     "dev:web": "turbo run dev --filter=@tetris/web",
     "dev:admin": "turbo run dev --filter=@tetris/admin",
     "dev:api": "turbo run dev --filter=@tetris/api",
-    "start": "turbo run start --parallel",
+    "start": "turbo run start --parallel --filter=@tetris/web --filter=@tetris/api",
     "start:api:test": "node scripts/start-api-test.mjs",
     "build": "turbo run build --concurrency=1",
     "test": "turbo run test",

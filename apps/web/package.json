@@ -2,11 +2,11 @@
   "name": "@tetris/web",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 6004 --hostname 127.0.0.1",
     "dev:e2e": "next dev -p 3110 --hostname 127.0.0.1",
     "build": "next build",
     "start:e2e": "next start --port 3110 --hostname 127.0.0.1",
-    "start": "next start",
+    "start": "next start --port 6004 --hostname 127.0.0.1",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

@@ -279,7 +279,7 @@ function modeActionVariant(mode: GameMode): CtaVariant {
 }
 
 function resolveApiBaseUrl() {
-  return process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001/v1";
+  return process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:60040/v1";
 }
 
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {

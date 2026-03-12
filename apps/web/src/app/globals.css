@@ -386,7 +386,25 @@ select:focus-visible {
 }
 
 .page-shell.screen-playing {
+  --play-scale: 1;
+  --play-viewport-height: auto;
   padding-bottom: calc(18px + var(--safe-bottom));
+}
+
+.screen-playing .play-viewport {
+  width: 100%;
+  min-height: 0;
+  height: var(--play-viewport-height);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+.screen-playing .play-scale-frame {
+  width: 100%;
+  transform-origin: top center;
+  transform: scale(var(--play-scale));
 }
 
 .compact-hero h1 {

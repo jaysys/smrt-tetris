@@ -14,28 +14,9 @@ async function capture(page: Parameters<typeof test>[0]["page"], name: string) {
 
 test("CAPTURE-001 major screens", async ({ page }) => {
   await page.goto("/");
+  await expect(page.getByTestId("game-canvas")).toBeVisible();
 
-  await expect
-    .poll(async () => {
-      if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
-        return "tutorial";
-      }
-
-      if ((await page.getByTestId("game-canvas").count()) > 0) {
-        return "game";
-      }
-
-      return "none";
-    })
-    .not.toBe("none");
-
-  if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
-    await page.getByTestId("tutorial-skip-button").click();
-  }
-
-  await page.getByTestId("play-menu-button").click();
-  await expect(page.getByTestId("pause-overlay")).toBeVisible();
-  await page.getByTestId("play-home-button").click();
+  await page.keyboard.press("Escape");
   await expect(page.getByTestId("start-button")).toBeVisible();
   await capture(page, "01-landing.png");
 
@@ -64,8 +45,7 @@ test("CAPTURE-001 major screens", async ({ page }) => {
   await expect(page.getByTestId("game-canvas")).toBeVisible();
   await capture(page, "06-playing.png");
 
-  await page.getByTestId("play-menu-button").click();
-  await page.getByTestId("session-end-button").click();
+  await page.keyboard.press("q");
   await expect(page.getByTestId("retry-button")).toBeVisible();
   await capture(page, "07-result.png");
 

@@ -3,30 +3,12 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 async function reachInitialGame(page: Page) {
-  await expect
-    .poll(async () => {
-      if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
-        return "tutorial";
-      }
-
-      if ((await page.getByTestId("game-canvas").count()) > 0) {
-        return "game";
-      }
-
-      return "none";
-    })
-    .not.toBe("none");
-
-  if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
-    await page.getByTestId("tutorial-skip-button").click();
-  }
+  await expect(page.getByTestId("game-canvas")).toBeVisible();
 }
 
 async function openLandingFromGame(page: Page) {
   await reachInitialGame(page);
-  await page.getByTestId("play-menu-button").click();
-  await expect(page.getByTestId("pause-overlay")).toBeVisible();
-  await page.getByTestId("play-home-button").click();
+  await page.keyboard.press("Escape");
   await expect(page.getByTestId("start-button")).toBeVisible();
 }
 
@@ -40,10 +22,7 @@ test("P0-HOME-001 home boots directly into marathon play", async ({ page }, test
   await page.goto("/");
   await reachInitialGame(page);
 
-  await expect(
-    page.getByTestId("play-viewport").getByRole("heading", { name: "Marathon" })
-  ).toBeVisible();
-  await expect(page.getByTestId("play-menu-button")).toHaveText("일시정지");
+  await expect(page.getByTestId("play-viewport").locator("button")).toHaveCount(0);
 
   const consoleLogPath = testInfo.outputPath("console.log");
   mkdirSync(dirname(consoleLogPath), { recursive: true });
@@ -117,8 +96,7 @@ test("P1-MOBILE-001 landing and result keep critical CTAs above the fold at 360x
   }
 
   await page.getByTestId("start-button").click();
-  await page.getByTestId("play-menu-button").click();
-  await page.getByTestId("session-end-button").click();
+  await page.keyboard.press("q");
 
   const resultButtons = [
     page.getByTestId("retry-button"),
@@ -140,7 +118,7 @@ test("P1-MOBILE-001 landing and result keep critical CTAs above the fold at 360x
   expect(new Set(positions).size).toBe(2);
 });
 
-test("P1-PLAY-001 game HUD, board, and touch dock stay within one mobile viewport", async ({
+test("P1-PLAY-001 game board stays centered and within one mobile viewport", async ({
   page
 }) => {
   const viewports = [
@@ -155,19 +133,22 @@ test("P1-PLAY-001 game HUD, board, and touch dock stay within one mobile viewpor
     await page.goto("/");
     await reachInitialGame(page);
 
-    const required = [
-      page.getByTestId("score-value"),
-      page.getByTestId("game-canvas"),
-      page.getByTestId("keyboard-guide"),
-      page.getByTestId("next-queue")
-    ];
+    const required = [page.getByTestId("game-canvas")];
 
     for (const locator of required) {
       await expect(locator).toBeVisible();
       const box = await locator.boundingBox();
       expect(box).not.toBeNull();
       expect(box!.y + box!.height).toBeLessThanOrEqual(viewport.height);
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(viewport.width - (box!.x + box!.width)).toBeGreaterThanOrEqual(0);
     }
+
+    const boardBox = await page.getByTestId("game-canvas").boundingBox();
+    expect(boardBox).not.toBeNull();
+    const leftGap = boardBox!.x;
+    const rightGap = viewport.width - (boardBox!.x + boardBox!.width);
+    expect(Math.abs(leftGap - rightGap)).toBeLessThanOrEqual(6);
   }
 });
 
@@ -175,37 +156,12 @@ test("P1-GAME-001 start, finish, and retry loops stay interactive", async ({
   page
 }) => {
   await page.goto("/");
-
-  const tutorialOverlay = page.getByTestId("tutorial-overlay");
   const gameCanvas = page.getByTestId("game-canvas");
 
-  await expect
-    .poll(async () => {
-      if ((await tutorialOverlay.count()) > 0) {
-        return "tutorial";
-      }
-
-      if ((await gameCanvas.count()) > 0) {
-        return "game";
-      }
-
-      return "none";
-    })
-    .not.toBe("none");
-
-  if ((await tutorialOverlay.count()) > 0) {
-    await expect(tutorialOverlay).toBeVisible();
-    await page.getByTestId("tutorial-skip-button").click();
-  }
-
   await expect(gameCanvas).toBeVisible();
-  await expect(page.getByTestId("score-value")).toBeVisible();
-  await expect(page.getByTestId("keyboard-guide")).toBeVisible();
-  await expect(page.getByTestId("next-queue")).toBeVisible();
+  await expect(page.getByTestId("play-viewport").locator("button")).toHaveCount(0);
 
-  await page.getByTestId("play-menu-button").click();
-  await expect(page.getByTestId("pause-overlay")).toBeVisible();
-  await page.getByTestId("session-end-button").click();
+  await page.keyboard.press("q");
 
   await expect(page.getByTestId("retry-button")).toBeVisible();
   await expect(page.getByTestId("result-celebration")).toBeVisible();
@@ -220,8 +176,6 @@ test("P1-GAME-001 start, finish, and retry loops stay interactive", async ({
   await page.getByTestId("nickname-save-button").click();
 
   await page.getByTestId("retry-button").click();
-  await expect(page.getByTestId("tutorial-overlay")).toHaveCount(0);
-
   await expect(page.getByTestId("game-canvas")).toBeVisible();
 
   const trackedEvents = await page.evaluate(() =>
@@ -247,56 +201,15 @@ test("P2-MODE-001 sprint and daily runs expose mode-specific HUD metrics", async
 
   await page.getByTestId("mode-button").click();
   await page.getByTestId("mode-start-button-SPRINT").click();
-
-  await expect
-    .poll(async () => {
-      if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
-        return "tutorial";
-      }
-
-      if ((await page.getByTestId("duration-value").count()) > 0) {
-        return "game";
-      }
-
-      return "none";
-    })
-    .not.toBe("none");
-
-  if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
-    await page.getByTestId("tutorial-skip-button").click();
-  }
-
-  await expect(page.getByTestId("duration-value")).toBeVisible();
-  await expect(page.getByTestId("lines-value")).toContainText("0");
-  await page.getByTestId("play-menu-button").click();
-  await page.getByTestId("session-end-button").click();
+  await expect(page.getByTestId("game-canvas")).toBeVisible();
+  await page.keyboard.press("q");
   await expect(page.getByTestId("result-hero-primary")).toContainText("완주 기록");
 
   await page.goto("/");
   await openLandingFromGame(page);
   await page.getByTestId("mode-button").click();
   await page.getByTestId("mode-start-button-DAILY_CHALLENGE").click();
-
-  await expect
-    .poll(async () => {
-      if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
-        return "tutorial";
-      }
-
-      if ((await page.getByTestId("duration-value").count()) > 0) {
-        return "game";
-      }
-
-      return "none";
-    })
-    .not.toBe("none");
-
-  if ((await page.getByTestId("tutorial-overlay").count()) > 0) {
-    await page.getByTestId("tutorial-skip-button").click();
-  }
-
-  await expect(page.getByTestId("duration-value")).toBeVisible();
-  await page.getByTestId("play-menu-button").click();
-  await page.getByTestId("session-end-button").click();
+  await expect(page.getByTestId("game-canvas")).toBeVisible();
+  await page.keyboard.press("q");
   await expect(page.getByTestId("result-hero-primary")).toContainText("도전 진행도");
 });

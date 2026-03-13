@@ -9,7 +9,7 @@ async function reachInitialGame(page: Page) {
         return "tutorial";
       }
 
-      if ((await page.getByTestId("session-end-button").count()) > 0) {
+      if ((await page.getByTestId("game-canvas").count()) > 0) {
         return "game";
       }
 
@@ -25,6 +25,8 @@ async function reachInitialGame(page: Page) {
 async function openLandingFromGame(page: Page) {
   await reachInitialGame(page);
   await page.getByTestId("play-menu-button").click();
+  await expect(page.getByTestId("pause-overlay")).toBeVisible();
+  await page.getByTestId("play-home-button").click();
   await expect(page.getByTestId("start-button")).toBeVisible();
 }
 
@@ -41,8 +43,7 @@ test("P0-HOME-001 home boots directly into marathon play", async ({ page }, test
   await expect(
     page.getByTestId("play-viewport").getByRole("heading", { name: "Marathon" })
   ).toBeVisible();
-  await expect(page.getByTestId("session-end-button")).toHaveText("나가기");
-  await expect(page.getByTestId("play-menu-button")).toHaveText("메뉴");
+  await expect(page.getByTestId("play-menu-button")).toHaveText("일시정지");
 
   const consoleLogPath = testInfo.outputPath("console.log");
   mkdirSync(dirname(consoleLogPath), { recursive: true });
@@ -116,7 +117,8 @@ test("P1-MOBILE-001 landing and result keep critical CTAs above the fold at 360x
   }
 
   await page.getByTestId("start-button").click();
-  await page.getByTestId("session-end-button").click({ force: true });
+  await page.getByTestId("play-menu-button").click();
+  await page.getByTestId("session-end-button").click();
 
   const resultButtons = [
     page.getByTestId("retry-button"),
@@ -156,7 +158,8 @@ test("P1-PLAY-001 game HUD, board, and touch dock stay within one mobile viewpor
     const required = [
       page.getByTestId("score-value"),
       page.getByTestId("game-canvas"),
-      page.getByTestId("touch-controls")
+      page.getByTestId("keyboard-guide"),
+      page.getByTestId("next-queue")
     ];
 
     for (const locator of required) {
@@ -197,10 +200,12 @@ test("P1-GAME-001 start, finish, and retry loops stay interactive", async ({
 
   await expect(gameCanvas).toBeVisible();
   await expect(page.getByTestId("score-value")).toBeVisible();
-  await expect(page.getByTestId("hold-slot")).toBeVisible();
+  await expect(page.getByTestId("keyboard-guide")).toBeVisible();
   await expect(page.getByTestId("next-queue")).toBeVisible();
 
-  await page.getByTestId("session-end-button").click({ force: true });
+  await page.getByTestId("play-menu-button").click();
+  await expect(page.getByTestId("pause-overlay")).toBeVisible();
+  await page.getByTestId("session-end-button").click();
 
   await expect(page.getByTestId("retry-button")).toBeVisible();
   await expect(page.getByTestId("result-celebration")).toBeVisible();
@@ -262,8 +267,9 @@ test("P2-MODE-001 sprint and daily runs expose mode-specific HUD metrics", async
   }
 
   await expect(page.getByTestId("duration-value")).toBeVisible();
-  await expect(page.getByTestId("goal-progress")).toContainText("40");
-  await page.getByTestId("session-end-button").click({ force: true });
+  await expect(page.getByTestId("lines-value")).toContainText("0");
+  await page.getByTestId("play-menu-button").click();
+  await page.getByTestId("session-end-button").click();
   await expect(page.getByTestId("result-hero-primary")).toContainText("완주 기록");
 
   await page.goto("/");
@@ -277,7 +283,7 @@ test("P2-MODE-001 sprint and daily runs expose mode-specific HUD metrics", async
         return "tutorial";
       }
 
-      if ((await page.getByTestId("goal-progress").count()) > 0) {
+      if ((await page.getByTestId("duration-value").count()) > 0) {
         return "game";
       }
 
@@ -289,7 +295,8 @@ test("P2-MODE-001 sprint and daily runs expose mode-specific HUD metrics", async
     await page.getByTestId("tutorial-skip-button").click();
   }
 
-  await expect(page.getByTestId("goal-progress")).toContainText("/");
-  await page.getByTestId("session-end-button").click({ force: true });
+  await expect(page.getByTestId("duration-value")).toBeVisible();
+  await page.getByTestId("play-menu-button").click();
+  await page.getByTestId("session-end-button").click();
   await expect(page.getByTestId("result-hero-primary")).toContainText("도전 진행도");
 });

@@ -52,6 +52,18 @@ body {
   font-family: Georgia, "Times New Roman", serif;
 }
 
+.seo-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .skip-link {
   position: absolute;
   left: 16px;
@@ -148,6 +160,8 @@ select:focus-visible {
 .daily-banner,
 .status-chip {
   display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 18px;
   padding: 10px 14px;
   border-radius: 999px;
@@ -221,12 +235,59 @@ select:focus-visible {
   line-height: 1.4;
 }
 
+.reward-icon-wrap,
+.feature-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.reward-icon-wrap {
+  margin-bottom: 4px;
+}
+
+.feature-icon-wrap {
+  margin-bottom: 12px;
+}
+
+.game-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: currentColor;
+  flex: 0 0 auto;
+}
+
+.game-glyph svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.reward-icon,
+.feature-icon {
+  width: 20px;
+  height: 20px;
+}
+
 .cta-button,
 .touch-button {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-height: 56px;
   padding: 12px 18px;
   overflow: hidden;
@@ -475,6 +536,26 @@ select:focus-visible {
   overflow: hidden;
 }
 
+.poster-emblem {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(13, 18, 40, 0.22);
+  backdrop-filter: blur(10px);
+}
+
+.poster-emblem-icon {
+  width: 28px;
+  height: 28px;
+  color: #fff8f2;
+}
+
 .mode-card-copy {
   display: grid;
   align-content: start;
@@ -622,6 +703,12 @@ select:focus-visible {
   display: grid;
   align-content: end;
   gap: 10px;
+}
+
+.podium-icon {
+  width: 26px;
+  height: 26px;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .podium-card::after {
@@ -1141,6 +1228,144 @@ select:focus-visible {
   align-items: center;
 }
 
+.play-hud-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.game-layout--minimal {
+  grid-template-columns: minmax(108px, 0.32fr) minmax(0, 1fr) minmax(84px, 0.22fr);
+  gap: 14px;
+  margin-top: 16px;
+  align-items: center;
+}
+
+.side-panel-primary--minimal,
+.side-panel-secondary--minimal {
+  align-content: center;
+}
+
+.hud-card--guide,
+.hud-card--queue-mini {
+  padding: 14px;
+  border-radius: 22px;
+}
+
+.hud-card--guide p {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text-sub);
+}
+
+.hud-card--guide p + p {
+  margin-top: 8px;
+}
+
+.hud-card--queue-mini {
+  justify-items: center;
+}
+
+.next-queue--single {
+  justify-items: center;
+}
+
+.next-queue--single .mini-piece {
+  min-width: 54px;
+  min-height: 54px;
+  border-radius: 16px;
+  font-size: 1rem;
+}
+
+.pause-overlay {
+  z-index: 25;
+}
+
+.pause-card {
+  display: grid;
+  gap: 14px;
+}
+
+.play-marquee {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.play-marquee-card {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 8px;
+  min-height: 112px;
+  padding: 16px 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(184, 196, 242, 0.12);
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 22%),
+    linear-gradient(180deg, rgba(23, 35, 75, 0.96), rgba(13, 22, 48, 0.98));
+}
+
+.play-marquee-card::after {
+  content: "";
+  position: absolute;
+  right: -22px;
+  bottom: -24px;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  opacity: 0.32;
+}
+
+.play-marquee-card--mode::after {
+  background: rgba(255, 200, 58, 0.36);
+}
+
+.play-marquee-card--goal::after {
+  background: rgba(73, 214, 255, 0.28);
+}
+
+.play-marquee-card--reward::after {
+  background: rgba(255, 92, 184, 0.28);
+}
+
+.play-marquee-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(246, 248, 255, 0.88);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.play-marquee-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.play-marquee-card strong {
+  position: relative;
+  z-index: 1;
+  font-size: 1.04rem;
+  color: var(--text-main);
+}
+
+.play-marquee-card p {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: var(--text-sub);
+  line-height: 1.45;
+  font-size: 0.9rem;
+}
+
 .game-layout {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr) 220px;
@@ -1164,12 +1389,19 @@ select:focus-visible {
 }
 
 .hud-label {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin-bottom: 10px;
   color: var(--muted);
   font-size: 0.82rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.hud-label-icon {
+  width: 15px;
+  height: 15px;
 }
 
 .board-frame {
@@ -1269,47 +1501,95 @@ select:focus-visible {
   letter-spacing: 0.08em;
 }
 
-.touch-controls {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 24px;
-}
-
 .control-deck {
-  margin-top: 24px;
-  padding: 18px;
+  margin-top: 16px;
+  padding: 12px;
   border-radius: 28px;
   border: 1px solid rgba(184, 196, 242, 0.14);
   background:
     radial-gradient(circle at 12% 18%, rgba(73, 214, 255, 0.16), transparent 18%),
     linear-gradient(180deg, rgba(18, 28, 61, 0.94), rgba(10, 18, 42, 0.98));
-  padding-bottom: calc(18px + var(--safe-bottom));
+  padding-bottom: calc(12px + var(--safe-bottom));
 }
 
-.control-deck-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+.control-deck-shell {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
-.control-deck-header h2 {
-  margin: 0;
-  font-size: 1.28rem;
+.control-cluster {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.control-cluster--move {
+  background:
+    radial-gradient(circle at 18% 14%, rgba(73, 214, 255, 0.12), transparent 20%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.control-cluster--drop {
+  background:
+    radial-gradient(circle at 82% 12%, rgba(255, 155, 47, 0.14), transparent 22%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.control-cluster--action {
+  background:
+    radial-gradient(circle at 20% 16%, rgba(255, 92, 184, 0.14), transparent 20%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.control-cluster-head {
+  display: grid;
+  gap: 6px;
+}
+
+.control-cluster-head small {
+  color: var(--text-sub);
+  font-size: 0.78rem;
+}
+
+.control-cluster-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.control-cluster-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.touch-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .touch-button {
-  align-items: flex-start;
-  min-height: 112px;
-  padding: 16px;
-  border-radius: 24px;
-  text-align: left;
+  align-items: center;
+  min-height: 76px;
+  padding: 12px 10px;
+  border-radius: 20px;
+  text-align: center;
   flex-direction: column;
 }
 
-.touch-button strong,
-.touch-button small {
+.touch-button strong {
   position: relative;
   z-index: 1;
 }
@@ -1318,22 +1598,16 @@ select:focus-visible {
   position: relative;
   z-index: 1;
   display: inline-flex;
-  margin-bottom: 8px;
-  padding: 6px 10px;
+  margin-bottom: 6px;
+  padding: 5px 9px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.16);
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   letter-spacing: 0.08em;
 }
 
 .touch-button strong {
-  font-size: 1rem;
-}
-
-.touch-button small {
-  margin-top: 6px;
-  color: rgba(246, 248, 255, 0.8);
-  line-height: 1.45;
+  font-size: 0.95rem;
 }
 
 .touch-tone-move {
@@ -1354,6 +1628,29 @@ select:focus-visible {
 
 .accessibility-panel {
   margin-top: 24px;
+}
+
+.control-guide-list {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-sub);
+  font-size: 0.84rem;
+}
+
+.control-guide-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.control-guide-list li::after {
+  content: "지원";
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
 }
 
 .theme-high-contrast {
@@ -1420,6 +1717,16 @@ select:focus-visible {
     grid-template-columns: 1fr;
   }
 
+  .game-layout--minimal {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .play-marquee {
+    grid-template-columns: 1fr;
+  }
+
   .side-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1444,7 +1751,6 @@ select:focus-visible {
   .credits-grid,
   .ranking-podium,
   .side-panel,
-  .touch-controls,
   .cta-grid {
     grid-template-columns: 1fr;
   }
@@ -1480,6 +1786,10 @@ select:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .control-deck-shell {
+    grid-template-columns: 1fr;
+  }
+
   .result-summary-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
@@ -1492,6 +1802,37 @@ select:focus-visible {
   .result-panel,
   .bottom-sheet {
     border-radius: 22px;
+  }
+
+  .screen-playing .play-header,
+  .screen-playing .play-header-actions {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .screen-playing .play-header-actions {
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .screen-playing .play-header-actions .cta-button {
+    min-height: 40px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .screen-playing .play-hud-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .screen-playing .game-layout--minimal {
+    grid-template-columns: minmax(96px, 0.34fr) minmax(0, 1fr) minmax(72px, 0.2fr);
+  }
+
+  .screen-playing .hud-card--guide,
+  .screen-playing .hud-card--queue-mini {
+    padding: 10px;
+    border-radius: 18px;
   }
 }
 
@@ -1555,26 +1896,32 @@ select:focus-visible {
   .screen-playing .play-panel {
     display: grid;
     grid-template-rows: auto auto auto;
-    gap: 8px;
-    padding: 12px;
+    gap: 6px;
+    padding: 8px;
   }
 
   .screen-playing .play-header {
-    gap: 8px;
+    gap: 6px;
   }
 
   .screen-playing .play-header .eyebrow {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
+    font-size: 0.64rem;
   }
 
   .screen-playing .play-header h1 {
-    font-size: 1.45rem;
+    font-size: 1.22rem;
   }
 
   .screen-playing .session-meta {
+    margin-top: 4px;
+    font-size: 0.66rem;
+    line-height: 1.2;
+  }
+
+  .screen-playing .play-hud-strip {
+    gap: 4px;
     margin-top: 6px;
-    font-size: 0.78rem;
-    line-height: 1.35;
   }
 
   .screen-playing .game-layout {
@@ -1587,56 +1934,49 @@ select:focus-visible {
     align-content: start;
   }
 
+  .screen-playing .game-layout--minimal {
+    grid-template-columns: minmax(76px, 0.34fr) minmax(0, 1fr) minmax(54px, 0.18fr);
+    gap: 6px;
+    margin-top: 8px;
+  }
+
   .screen-playing .side-panel-primary {
     grid-area: primary;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 6px;
+    gap: 4px;
   }
 
   .screen-playing .side-panel-secondary {
     grid-area: secondary;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
+    gap: 4px;
+  }
+
+  .screen-playing .side-panel-primary--minimal,
+  .screen-playing .side-panel-secondary--minimal {
+    grid-template-columns: 1fr;
   }
 
   .screen-playing .side-panel .hud-card {
-    padding: 8px;
-    border-radius: 16px;
+    padding: 6px;
+    border-radius: 14px;
   }
 
   .screen-playing .hud-card--compact strong {
-    margin-bottom: 4px;
-    font-size: 0.8rem;
+    margin-bottom: 2px;
+    font-size: 0.74rem;
     line-height: 1.1;
   }
 
   .screen-playing .hud-card--compact .hud-label {
-    margin-bottom: 4px;
-    font-size: 0.56rem;
+    margin-bottom: 2px;
+    font-size: 0.52rem;
     letter-spacing: 0.05em;
   }
 
-  .screen-playing .hud-card--hold small,
-  .screen-playing .hud-card--assist small {
-    display: none;
-  }
-
-  .screen-playing .hud-card--goal p,
-  .screen-playing .hud-card--assist p {
-    font-size: 0.68rem;
-    line-height: 1.2;
-  }
-
-  .screen-playing .hud-card--goal p:nth-of-type(2),
-  .screen-playing .hud-card--goal p:nth-of-type(3) {
-    display: none;
-  }
-
-  .screen-playing .hud-card--assist .cta-button {
-    min-height: 38px;
-    padding: 8px 6px;
-    border-radius: 14px;
-    font-size: 0.72rem;
+  .screen-playing .hud-card--guide p {
+    font-size: 0.5rem;
+    line-height: 1.15;
   }
 
   .screen-playing .next-queue {
@@ -1644,9 +1984,9 @@ select:focus-visible {
   }
 
   .screen-playing .mini-piece {
-    min-height: 24px;
-    border-radius: 10px;
-    font-size: 0.65rem;
+    min-height: 20px;
+    border-radius: 8px;
+    font-size: 0.58rem;
     letter-spacing: 0.04em;
   }
 
@@ -1663,9 +2003,9 @@ select:focus-visible {
   }
 
   .screen-playing .board-frame {
-    width: min(100%, 188px);
-    padding: 8px;
-    border-radius: 18px;
+    width: min(100%, 164px);
+    padding: 6px;
+    border-radius: 16px;
   }
 
   .board-grid {
@@ -1682,26 +2022,11 @@ select:focus-visible {
     font-size: 0.88rem;
   }
 
-  .touch-controls {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    margin-top: 18px;
-  }
-
-  .screen-playing .control-deck {
-    margin-top: 4px;
-    padding: 6px 8px calc(6px + var(--safe-bottom));
-    border-radius: 18px;
-  }
-
-  .screen-playing .control-deck-header {
-    display: none;
-  }
-
-  .screen-playing .touch-controls {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
-    margin-top: 0;
+  .screen-playing .next-queue--single .mini-piece {
+    min-width: 28px;
+    min-height: 28px;
+    border-radius: 10px;
+    font-size: 0.64rem;
   }
 
   .bottom-sheet {
@@ -1709,40 +2034,14 @@ select:focus-visible {
     border-radius: 24px 24px 0 0;
   }
 
-  .touch-button,
   .cta-button,
   .chip-button {
     padding: 11px 14px;
   }
 
-  .touch-button {
-    min-height: 96px;
-  }
-
-  .screen-playing .touch-button {
-    min-height: 50px;
-    padding: 6px 5px;
-    border-radius: 14px;
-  }
-
-  .screen-playing .touch-button strong {
-    font-size: 0.68rem;
-    line-height: 1.1;
-  }
-
-  .screen-playing .touch-button small {
-    display: none;
-  }
-
-  .screen-playing .touch-badge {
-    margin-bottom: 3px;
-    padding: 3px 5px;
-    font-size: 0.58rem;
-  }
-
   .settings-row,
   .status-strip {
-    gap: 8px;
+    gap: 4px;
   }
 
   .screen-playing .status-strip {
@@ -1753,9 +2052,9 @@ select:focus-visible {
 
   .screen-playing .status-chip.compact {
     width: auto;
-    min-height: 28px;
-    padding: 6px 4px;
-    font-size: 0.62rem;
+    min-height: 24px;
+    padding: 4px 3px;
+    font-size: 0.56rem;
     text-align: center;
   }
 

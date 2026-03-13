@@ -34,6 +34,8 @@ test("CAPTURE-001 major screens", async ({ page }) => {
   }
 
   await page.getByTestId("play-menu-button").click();
+  await expect(page.getByTestId("pause-overlay")).toBeVisible();
+  await page.getByTestId("play-home-button").click();
   await expect(page.getByTestId("start-button")).toBeVisible();
   await capture(page, "01-landing.png");
 
@@ -62,6 +64,7 @@ test("CAPTURE-001 major screens", async ({ page }) => {
   await expect(page.getByTestId("game-canvas")).toBeVisible();
   await capture(page, "06-playing.png");
 
+  await page.getByTestId("play-menu-button").click();
   await page.getByTestId("session-end-button").click();
   await expect(page.getByTestId("retry-button")).toBeVisible();
   await capture(page, "07-result.png");

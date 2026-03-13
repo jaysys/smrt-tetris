@@ -57,37 +57,27 @@ export default function HomePage() {
   return (
     <>
       <GameClient />
-      <section id="content" className="page-shell seo-shell" aria-labelledby="seo-heading">
-        <div className="hero-panel compact-hero seo-panel">
-          <p className="eyebrow">Tetris Guide</p>
-          <h2 id="seo-heading">무료 테트리스 웹게임을 찾는 플레이어를 위한 핵심 정보</h2>
-          <p className="lead">
-            SMRT Tetris는 설치 없이 바로 즐기는 브라우저 테트리스입니다. Marathon, Sprint
-            40라인, Daily Challenge를 한 곳에서 플레이하고, 모바일과 데스크톱 모두에서
-            빠르게 재도전할 수 있도록 설계했습니다.
-          </p>
-        </div>
-
-        <div className="card-grid seo-card-grid">
-          {seoHighlights.map((item) => (
-            <article key={item.title} className="info-card seo-card">
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
+      <section id="content" className="seo-only" aria-labelledby="seo-heading">
+        <h2 id="seo-heading">무료 테트리스 웹게임을 찾는 플레이어를 위한 핵심 정보</h2>
+        <p>
+          SMRT Tetris는 설치 없이 바로 즐기는 브라우저 테트리스입니다. Marathon, Sprint
+          40라인, Daily Challenge를 한 곳에서 플레이하고, 모바일과 데스크톱 모두에서
+          빠르게 재도전할 수 있도록 설계했습니다.
+        </p>
+        {seoHighlights.map((item) => (
+          <article key={item.title}>
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </article>
+        ))}
+        <section aria-labelledby="faq-heading">
+          <h2 id="faq-heading">테트리스 플레이어가 자주 묻는 질문</h2>
+          {faqEntries.map((entry) => (
+            <article key={entry.question}>
+              <h3>{entry.question}</h3>
+              <p>{entry.answer}</p>
             </article>
           ))}
-        </div>
-
-        <section className="hero-panel compact-hero seo-panel faq-panel" aria-labelledby="faq-heading">
-          <p className="eyebrow">FAQ</p>
-          <h2 id="faq-heading">테트리스 플레이어가 자주 묻는 질문</h2>
-          <div className="faq-list">
-            {faqEntries.map((entry) => (
-              <article key={entry.question} className="faq-item">
-                <h3>{entry.question}</h3>
-                <p>{entry.answer}</p>
-              </article>
-            ))}
-          </div>
         </section>
       </section>
       <script

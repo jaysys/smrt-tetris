@@ -11,7 +11,7 @@
     "start:api:test": "node scripts/start-api-test.mjs",
     "build": "turbo run build --concurrency=1",
     "test": "turbo run test",
-    "test:e2e": "playwright test",
+    "test:e2e": "pnpm --dir apps/web run build && playwright test",
     "capture:screens": "playwright test tests/e2e/screenshot-capture.spec.ts",
     "lint": "turbo run lint",
     "db:reset": "node scripts/db-reset.mjs",

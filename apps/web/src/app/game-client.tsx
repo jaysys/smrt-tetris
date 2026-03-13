@@ -77,29 +77,33 @@ const modeDescriptions: Record<
 
 const landingHighlights = [
   {
+    icon: "calendar",
     title: "오늘의 Daily Challenge",
     description: "한 판 흐름을 끊지 않는 보조 목표로 제공됩니다."
   },
   {
+    icon: "controller",
     title: "모바일 세로 우선",
     description: "390x844와 360x800에서 보드, HUD, 조작부가 동시에 보입니다."
   },
   {
+    icon: "spark",
     title: "빠른 재도전",
     description: "결과 확인보다 다시 시작이 더 눈에 띄도록 설계했습니다."
   }
 ] as const;
 
 const landingRewardStamps = [
-  { label: "HOT STREAK", copy: "최근 3판 중 최고 흐름" },
-  { label: "DAILY BONUS", copy: "오늘의 보상 상자 대기 중" },
-  { label: "FAST RETRY", copy: "결과 확인 뒤 바로 재도전" }
+  { icon: "flame", label: "HOT STREAK", copy: "최근 3판 중 최고 흐름" },
+  { icon: "gift", label: "DAILY BONUS", copy: "오늘의 보상 상자 대기 중" },
+  { icon: "trophy", label: "FAST RETRY", copy: "결과 확인 뒤 바로 재도전" }
 ] as const;
 
 const modePosterDetails: Record<
   GameMode,
   {
     tone: string;
+    icon: "infinity" | "bolt" | "calendar";
     badge: string;
     pulse: string;
     emotion: string;
@@ -111,6 +115,7 @@ const modePosterDetails: Record<
 > = {
   MARATHON: {
     tone: "poster-marathon",
+    icon: "infinity",
     badge: "ENDLESS RUN",
     pulse: "점수와 레벨이 계속 쌓이는 장기전",
     emotion: "끝까지 버티며 수치를 키우는 생존 런",
@@ -121,6 +126,7 @@ const modePosterDetails: Record<
   },
   SPRINT: {
     tone: "poster-sprint",
+    icon: "bolt",
     badge: "TIME ATTACK",
     pulse: "짧은 시간 안에 손이 가장 빠르게 움직이는 모드",
     emotion: "짧고 빠르게 압박을 밀어붙이는 타임 어택",
@@ -131,6 +137,7 @@ const modePosterDetails: Record<
   },
   DAILY_CHALLENGE: {
     tone: "poster-daily",
+    icon: "calendar",
     badge: "LIMITED DROP",
     pulse: "오늘만 열리는 보상 미션과 스탬프를 노리는 모드",
     emotion: "오늘만 열리는 보상 미션",
@@ -212,58 +219,102 @@ const defaultSessionData: CreateGameSessionData = {
   }
 };
 
-const touchActions = [
-  { label: "왼쪽", action: "left" },
-  { label: "오른쪽", action: "right" },
-  { label: "회전", action: "rotate" },
-  { label: "홀드", action: "hold" },
-  { label: "소프트 드롭", action: "softDrop" },
-  { label: "하드 드롭", action: "hardDrop" }
-] as const;
-
-const touchActionMood: Record<
-  (typeof touchActions)[number]["action"],
-  { badge: string; hint: string; tone: string }
-> = {
-  left: {
-    badge: "MOVE",
-    hint: "안전하게 공간 확보",
-    tone: "touch-tone-move"
-  },
-  right: {
-    badge: "MOVE",
-    hint: "빠르게 빈 칸 진입",
-    tone: "touch-tone-move"
-  },
-  rotate: {
-    badge: "SPIN",
-    hint: "벽차기 타이밍 노리기",
-    tone: "touch-tone-spin"
-  },
-  hold: {
-    badge: "HOLD",
-    hint: "다음 흐름 저장",
-    tone: "touch-tone-hold"
-  },
-  softDrop: {
-    badge: "PRESS",
-    hint: "속도 조절하며 하강",
-    tone: "touch-tone-drop"
-  },
-  hardDrop: {
-    badge: "DROP",
-    hint: "즉시 착지로 점수 압박",
-    tone: "touch-tone-drop"
-  }
-};
-
 type CtaVariant = "utility" | "start" | "retry" | "daily" | "rank";
+type GameGlyphName =
+  | "spark"
+  | "calendar"
+  | "controller"
+  | "gift"
+  | "flame"
+  | "trophy"
+  | "infinity"
+  | "bolt"
+  | "crown"
+  | "drop"
+  | "shield"
+  | "pause";
 
 const guestTokenStorageKey = "tetris.guestToken";
 const tutorialSeenStorageKey = "tetris.tutorialSeen";
 
 function ctaButtonClass(variant: CtaVariant) {
   return `cta-button cta-button--${variant}`;
+}
+
+function GameGlyph({
+  icon,
+  className
+}: {
+  icon: GameGlyphName;
+  className?: string;
+}) {
+  return (
+    <span className={`game-glyph${className ? ` ${className}` : ""}`} aria-hidden="true">
+      <svg viewBox="0 0 24 24" focusable="false">
+        {icon === "spark" && (
+          <path d="M12 2l2.4 5.7L20 10l-5.6 2.3L12 18l-2.4-5.7L4 10l5.6-2.3L12 2z" />
+        )}
+        {icon === "calendar" && (
+          <>
+            <rect x="4" y="5" width="16" height="15" rx="3" />
+            <path d="M8 3v4M16 3v4M4 9h16" />
+          </>
+        )}
+        {icon === "controller" && (
+          <>
+            <path d="M7 9h10a4 4 0 014 4v1a4 4 0 01-4 4H7a4 4 0 01-4-4v-1a4 4 0 014-4z" />
+            <path d="M8 13h4M10 11v4M15.5 12.5h.01M17.5 14.5h.01" />
+          </>
+        )}
+        {icon === "gift" && (
+          <>
+            <path d="M4 10h16v10H4z" />
+            <path d="M12 10v10M4 13h16M7.5 10C5 10 5 6 7.5 6c1.9 0 3.2 2.1 4.5 4 1.3-1.9 2.6-4 4.5-4C19 6 19 10 16.5 10" />
+          </>
+        )}
+        {icon === "flame" && (
+          <path d="M12 3c1.8 2.2 3.7 4.3 3.7 7a3.7 3.7 0 11-7.4 0c0-1.7.8-3 1.7-4.3.5 1.4 1.4 2.2 2 2.8.9-1.4 0-3.4 0-5.5zM8.7 13.8A3.3 3.3 0 0012 20a3.3 3.3 0 003.3-6.2c-.5 2-1.7 3.2-3.3 3.2s-2.8-1.2-3.3-3.2z" />
+        )}
+        {icon === "trophy" && (
+          <>
+            <path d="M8 4h8v4a4 4 0 01-8 0V4z" />
+            <path d="M8 6H5a2 2 0 002 3h1M16 6h3a2 2 0 01-2 3h-1M12 12v4M9 20h6" />
+          </>
+        )}
+        {icon === "infinity" && (
+          <path d="M8 8c-2.2 0-4 1.8-4 4s1.8 4 4 4c3.2 0 4-4 6-4s2.8 2 4 2 2-1.3 2-2-1-2-2-2c-2 0-2.8 2-4 2s-2.8-4-6-4z" />
+        )}
+        {icon === "bolt" && (
+          <path d="M13 2L5 13h5l-1 9 8-11h-5l1-9z" />
+        )}
+        {icon === "crown" && (
+          <path d="M4 18l2-9 4 4 2-7 2 7 4-4 2 9H4z" />
+        )}
+        {icon === "drop" && (
+          <path d="M12 3c3.5 4 5 6.2 5 9a5 5 0 11-10 0c0-2.8 1.5-5 5-9z" />
+        )}
+        {icon === "shield" && (
+          <path d="M12 3l7 3v5c0 4.6-2.9 8-7 10-4.1-2-7-5.4-7-10V6l7-3z" />
+        )}
+        {icon === "pause" && (
+          <>
+            <rect x="7" y="5" width="3" height="14" rx="1" />
+            <rect x="14" y="5" width="3" height="14" rx="1" />
+          </>
+        )}
+      </svg>
+    </span>
+  );
+}
+
+function ModeGlyph({
+  mode,
+  className
+}: {
+  mode: GameMode;
+  className?: string;
+}) {
+  return <GameGlyph icon={modePosterDetails[mode].icon} className={className} />;
 }
 
 function modeActionVariant(mode: GameMode): CtaVariant {
@@ -283,13 +334,22 @@ function resolveApiBaseUrl() {
 }
 
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${resolveApiBaseUrl()}${path}`, init);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 1200);
+  try {
+    const response = await fetch(`${resolveApiBaseUrl()}${path}`, {
+      ...init,
+      signal: controller.signal
+    });
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    return (await response.json()) as T;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return (await response.json()) as T;
 }
 
 async function loadBootstrap(existingGuestToken: string | null) {
@@ -535,16 +595,14 @@ export function GameClient() {
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [bootstrapData, setBootstrapData] = useState<BootstrapData>(defaultBootstrap);
   const [appSettings, setAppSettings] = useState<UserSettings>(defaultBootstrap.settings);
-  const [sessionData, setSessionData] = useState<CreateGameSessionData | null>(null);
   const [announcementSummary, setAnnouncementSummary] = useState("");
-  const [statusNotice, setStatusNotice] = useState("게스트 토큰과 Daily 요약을 준비 중입니다.");
   const [game, setGame] = useState<GameSnapshot | null>(null);
   const [softDropActive, setSoftDropActive] = useState(false);
-  const [apiReady, setApiReady] = useState(false);
   const [lastTrackedEvent, setLastTrackedEvent] = useState("none");
   const [bootstrapResolved, setBootstrapResolved] = useState(false);
   const [playScale, setPlayScale] = useState(1);
   const [playViewportHeight, setPlayViewportHeight] = useState<number | null>(null);
+  const [playMenuOpen, setPlayMenuOpen] = useState(false);
   const engineRef = useRef<TetrisGame | null>(null);
   const hasTrackedLandingView = useRef(false);
   const hasTrackedGameFinish = useRef(false);
@@ -594,6 +652,7 @@ export function GameClient() {
     }
 
     if (snapshot?.status === "game_over") {
+      setPlayMenuOpen(false);
       startTransition(() => {
         setScreen("result");
       });
@@ -613,16 +672,10 @@ export function GameClient() {
 
     setBootstrapData(bootstrap);
     setAppSettings(bootstrap.settings);
-    setApiReady(bootstrap.guestToken !== defaultBootstrap.guestToken);
     setAnnouncementSummary(
       bootstrap.announcements[0]?.title ?? "공지 요약은 D3에서 확장됩니다."
     );
     setModeIndex(modeOrder.indexOf("MARATHON"));
-    setStatusNotice(
-      bootstrap.guestToken === defaultBootstrap.guestToken
-        ? "API 미기동 상태라 로컬 fallback으로 플레이합니다."
-        : "게스트 bootstrap과 Daily Challenge를 API에서 불러왔습니다."
-    );
 
     if (!hasTrackedLandingView.current) {
       hasTrackedLandingView.current = true;
@@ -675,9 +728,9 @@ export function GameClient() {
             }
           : null
     });
-    setSessionData(session);
     setGame(engineRef.current.getState());
     setSoftDropActive(false);
+    setPlayMenuOpen(false);
     hasTrackedGameFinish.current = false;
     pushAnalyticsEvent("game_start", {
       mode,
@@ -700,7 +753,13 @@ export function GameClient() {
 
   function openLandingMenu() {
     setTutorialOpen(false);
+    setPlayMenuOpen(false);
     setScreen("landing");
+  }
+
+  function togglePlayMenu() {
+    setPlayMenuOpen((current) => !current);
+    setSoftDropActive(false);
   }
 
   function closeTutorial() {
@@ -729,7 +788,7 @@ export function GameClient() {
   ) {
     const engine = engineRef.current;
 
-    if (!engine || tutorialOpen) {
+    if (!engine || tutorialOpen || (playMenuOpen && action !== "end")) {
       return;
     }
 
@@ -807,7 +866,7 @@ export function GameClient() {
         case "p":
         case "P":
           event.preventDefault();
-          applyAction("end");
+          togglePlayMenu();
           break;
       }
     };
@@ -824,10 +883,15 @@ export function GameClient() {
       window.removeEventListener("keydown", listener);
       window.removeEventListener("keyup", releaseListener);
     };
-  }, [screen, tutorialOpen]);
+  }, [playMenuOpen, screen, tutorialOpen]);
 
   useEffect(() => {
-    if (screen !== "playing" || deferredGame?.status !== "playing" || tutorialOpen) {
+    if (
+      screen !== "playing" ||
+      deferredGame?.status !== "playing" ||
+      tutorialOpen ||
+      playMenuOpen
+    ) {
       return;
     }
 
@@ -846,7 +910,14 @@ export function GameClient() {
     }, delay);
 
     return () => window.clearInterval(intervalId);
-  }, [deferredGame?.level, deferredGame?.status, screen, softDropActive, tutorialOpen]);
+  }, [
+    deferredGame?.level,
+    deferredGame?.status,
+    playMenuOpen,
+    screen,
+    softDropActive,
+    tutorialOpen
+  ]);
 
   useEffect(() => {
     if (screen !== "playing") {
@@ -963,6 +1034,7 @@ export function GameClient() {
                     void startGame(selectedMode);
                   }}
                 >
+                  <GameGlyph icon="spark" />
                   바로 시작
                 </button>
                 <button
@@ -971,6 +1043,7 @@ export function GameClient() {
                   data-testid="mode-button"
                   onClick={() => setScreen("modeSelect")}
                 >
+                  <ModeGlyph mode={selectedMode} />
                   모드 선택
                 </button>
                 <button
@@ -979,6 +1052,7 @@ export function GameClient() {
                   data-testid="ranking-button"
                   onClick={() => setScreen("ranking")}
                 >
+                  <GameGlyph icon="crown" />
                   랭킹 보기
                 </button>
               </div>
@@ -986,6 +1060,9 @@ export function GameClient() {
               <div className="reward-strip" aria-label="reward language">
                 {landingRewardStamps.map((stamp) => (
                   <article key={stamp.label} className="reward-stamp">
+                    <span className="reward-icon-wrap">
+                      <GameGlyph icon={stamp.icon} className="reward-icon" />
+                    </span>
                     <strong>{stamp.label}</strong>
                     <span>{stamp.copy}</span>
                   </article>
@@ -1070,6 +1147,9 @@ export function GameClient() {
           <section className="card-grid" aria-label="landing highlights">
             {landingHighlights.map((card) => (
               <article key={card.title} className="info-card highlight-card">
+                <span className="feature-icon-wrap">
+                  <GameGlyph icon={card.icon} className="feature-icon" />
+                </span>
                 <h2>{card.title}</h2>
                 <p>{card.description}</p>
               </article>
@@ -1139,6 +1219,9 @@ export function GameClient() {
                     <div className="poster-grid-lines" />
                     <div className="poster-orb" />
                     <div className="poster-glow" />
+                    <div className="poster-emblem">
+                      <ModeGlyph mode={mode} className="poster-emblem-icon" />
+                    </div>
                     <div className="poster-badge">{modePosterDetails[mode].badge}</div>
                     <div className="poster-pulse">{modePosterDetails[mode].pulse}</div>
                     <div className="poster-meter">
@@ -1280,6 +1363,10 @@ export function GameClient() {
                 className={`info-card podium-card podium-rank-${index + 1}`}
                 data-testid={`ranking-podium-${index + 1}`}
               >
+                <GameGlyph
+                  icon={index === 0 ? "crown" : index === 1 ? "trophy" : "spark"}
+                  className="podium-icon"
+                />
                 <span className="podium-medal">#{row.rank}</span>
                 <h2>{row.nickname}</h2>
                 <p className="podium-metric">{row.metric}</p>
@@ -1342,26 +1429,17 @@ export function GameClient() {
                   <div>
                     <p className="eyebrow">현재 플레이</p>
                     <h1>{modeLabels[deferredGame.mode]}</h1>
-                    <p className="session-meta" data-testid="session-id">
-                      목표 요약: {modeDescriptions[deferredGame.mode].ending}
-                    </p>
                   </div>
                   <div className="play-header-actions">
                     <button
                       type="button"
                       className={ctaButtonClass("utility")}
                       data-testid="play-menu-button"
-                      onClick={openLandingMenu}
+                      aria-expanded={playMenuOpen}
+                      onClick={togglePlayMenu}
                     >
-                      메뉴
-                    </button>
-                    <button
-                      type="button"
-                      className={ctaButtonClass("utility")}
-                      data-testid="session-end-button"
-                      onClick={() => applyAction("end")}
-                    >
-                      나가기
+                      <GameGlyph icon="pause" />
+                      일시정지
                     </button>
                   </div>
                 </div>
@@ -1406,133 +1484,121 @@ export function GameClient() {
                   </div>
                 )}
 
-            <div className="game-layout">
-              <aside className="side-panel side-panel-primary">
-                <div className="hud-card hud-card--compact">
-                  <span className="hud-label">점수</span>
-                  <strong data-testid="score-value">{deferredGame.score}</strong>
-                </div>
-                <div className="hud-card hud-card--compact">
-                  <span className="hud-label">라인</span>
-                  <strong data-testid="lines-value">{deferredGame.linesCleared}</strong>
-                </div>
-                <div className="hud-card hud-card--compact">
-                  <span className="hud-label">레벨</span>
-                  <strong data-testid="level-value">{deferredGame.level}</strong>
-                </div>
-                <div className="hud-card hud-card--compact">
-                  <span className="hud-label">
-                    {deferredGame.mode === "SPRINT" ? "기록" : "플레이 시간"}
-                  </span>
-                  <strong data-testid="duration-value">
-                    {formatDurationMs(deferredGame.durationMs)}
-                  </strong>
-                </div>
-                <div className="hud-card hud-card--compact hud-card--hold">
-                  <span className="hud-label">보관</span>
-                  <MiniPiece piece={deferredGame.holdPiece} testId="hold-slot" />
-                  <small>{deferredGame.canHold ? "사용 가능" : "잠김"}</small>
-                </div>
-              </aside>
-
-              <div className="board-stack">
-                <GameBoard
-                  state={deferredGame}
-                  showGhostPiece={appSettings.ghostPieceEnabled}
-                />
-                <div className="status-strip" aria-live="polite">
-                  <span className="status-chip compact" data-testid="combo-status">
-                    콤보 {deferredGame.comboCount}
-                  </span>
-                  <span className="status-chip compact" data-testid="b2b-status">
-                    백투백 {deferredGame.backToBackActive ? "ON" : "OFF"}
-                  </span>
-                  <span className="status-chip compact" data-testid="contrast-status">
-                    고대비 {appSettings.highContrastMode ? "ON" : "OFF"}
-                  </span>
-                </div>
-              </div>
-
-              <aside className="side-panel side-panel-secondary">
-                <div className="hud-card hud-card--queue">
-                  <span className="hud-label">다음 블록</span>
-                  <div className="next-queue" data-testid="next-queue">
-                    {deferredGame.nextQueue.map((piece, index) => (
-                      <MiniPiece key={`${piece}-${index}`} piece={piece} />
-                    ))}
-                  </div>
-                </div>
-                <div className="hud-card hud-card--goal">
-                  <span className="hud-label">목표</span>
-                  <p>{modeDescriptions[deferredGame.mode].summary}</p>
-                  <p>{modeDescriptions[deferredGame.mode].ranking}</p>
-                  {deferredGame.targetValue !== null && (
-                    <p data-testid="goal-progress">
-                      진행도 {deferredGame.progressValue ?? 0}/{deferredGame.targetValue}
-                    </p>
-                  )}
-                  <p>{apiReady ? "온라인 기록 준비 완료" : "로컬 플레이로 진행 중"}</p>
-                </div>
-                <div className="hud-card hud-card--assist">
-                  <span className="hud-label">조작 보조</span>
-                  <button
-                    type="button"
-                    className={ctaButtonClass("utility")}
-                    data-testid="playing-contrast-toggle"
-                    aria-pressed={appSettings.highContrastMode}
-                    onClick={() => void toggleHighContrastMode()}
-                  >
-                    고대비 {appSettings.highContrastMode ? "끔" : "켬"}
-                  </button>
-                  <small data-testid="touch-help">
-                    터치 버튼과 키보드 조작을 동시에 지원합니다.
-                  </small>
-                </div>
-              </aside>
-            </div>
-
-                <section className="control-deck" data-testid="touch-controls">
-                  <div className="control-deck-header">
-                    <div>
-                      <p className="eyebrow">플레이 패드</p>
-                      <h2>손끝 감각으로 바로 이어지는 조작 도크</h2>
+                {playMenuOpen && (
+                  <div className="tutorial-overlay pause-overlay" data-testid="pause-overlay">
+                    <div className="tutorial-card pause-card">
+                      <p className="eyebrow">일시정지</p>
+                      <h2 data-testid="session-id">{modeDescriptions[deferredGame.mode].ending}</h2>
+                      <p>
+                        키 안내를 다시 확인하거나 랜딩으로 돌아갈 수 있습니다. 플레이 종료는
+                        여기서만 노출됩니다.
+                      </p>
+                      <div className="cta-row">
+                        <button
+                          type="button"
+                          className={ctaButtonClass("start")}
+                          data-testid="play-resume-button"
+                          onClick={togglePlayMenu}
+                        >
+                          계속
+                        </button>
+                        <button
+                          type="button"
+                          className={ctaButtonClass("utility")}
+                          data-testid="play-home-button"
+                          onClick={openLandingMenu}
+                        >
+                          랜딩
+                        </button>
+                        <button
+                          type="button"
+                          className={ctaButtonClass("utility")}
+                          data-testid="session-end-button"
+                          onClick={() => applyAction("end")}
+                        >
+                          나가기
+                        </button>
+                      </div>
                     </div>
-                    <span className="status-chip compact">연속 입력 대응</span>
                   </div>
-                  <div className="touch-controls" aria-label="touch controls">
-                    {touchActions.map((item) => (
-                      <button
-                        key={item.action}
-                        type="button"
-                        className={`touch-button ${touchActionMood[item.action].tone}`}
-                        aria-label={`${item.label} 조작`}
-                        onMouseDown={() =>
-                          item.action === "softDrop"
-                            ? setSoftDropActive(true)
-                            : applyAction(item.action)
-                        }
-                        onMouseUp={() =>
-                          item.action === "softDrop" ? setSoftDropActive(false) : undefined
-                        }
-                        onMouseLeave={() =>
-                          item.action === "softDrop" ? setSoftDropActive(false) : undefined
-                        }
-                        onTouchStart={() =>
-                          item.action === "softDrop"
-                            ? setSoftDropActive(true)
-                            : applyAction(item.action)
-                        }
-                        onTouchEnd={() =>
-                          item.action === "softDrop" ? setSoftDropActive(false) : undefined
-                        }
-                      >
-                        <span className="touch-badge">{touchActionMood[item.action].badge}</span>
-                        <strong>{item.label}</strong>
-                        <small>{touchActionMood[item.action].hint}</small>
-                      </button>
-                    ))}
+                )}
+
+                <section className="play-hud-strip" aria-label="play hud">
+                  <div className="hud-card hud-card--compact">
+                    <span className="hud-label">
+                      <GameGlyph icon="trophy" className="hud-label-icon" />
+                      점수
+                    </span>
+                    <strong data-testid="score-value">{deferredGame.score}</strong>
+                  </div>
+                  <div className="hud-card hud-card--compact">
+                    <span className="hud-label">
+                      <GameGlyph icon="spark" className="hud-label-icon" />
+                      라인
+                    </span>
+                    <strong data-testid="lines-value">{deferredGame.linesCleared}</strong>
+                  </div>
+                  <div className="hud-card hud-card--compact">
+                    <span className="hud-label">
+                      <GameGlyph icon="bolt" className="hud-label-icon" />
+                      레벨
+                    </span>
+                    <strong data-testid="level-value">{deferredGame.level}</strong>
+                  </div>
+                  <div className="hud-card hud-card--compact">
+                    <span className="hud-label">
+                      <GameGlyph icon="calendar" className="hud-label-icon" />
+                      {deferredGame.mode === "SPRINT" ? "기록" : "플레이 시간"}
+                    </span>
+                    <strong data-testid="duration-value">
+                      {formatDurationMs(deferredGame.durationMs)}
+                    </strong>
                   </div>
                 </section>
+
+                <div className="game-layout game-layout--minimal">
+                  <aside className="side-panel side-panel-primary side-panel-primary--minimal">
+                    <div className="hud-card hud-card--guide" data-testid="keyboard-guide">
+                      <span className="hud-label">
+                        <GameGlyph icon="controller" className="hud-label-icon" />
+                        키 안내
+                      </span>
+                      <p>←→ 이동 / ↑ 회전 / ↓ 내림</p>
+                      <p>Space 낙하 / C 보관 / Esc 일시정지</p>
+                    </div>
+                  </aside>
+
+                  <div className="board-stack">
+                    <GameBoard
+                      state={deferredGame}
+                      showGhostPiece={appSettings.ghostPieceEnabled}
+                    />
+                    <div className="status-strip" aria-live="polite">
+                      <span className="status-chip compact" data-testid="combo-status">
+                        Combo x{deferredGame.comboCount}
+                      </span>
+                      <span className="status-chip compact" data-testid="b2b-status">
+                        {deferredGame.lastPerfectClear
+                          ? "Perfect Clear"
+                          : deferredGame.backToBackActive
+                            ? "Back-to-Back"
+                            : "Ready"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <aside className="side-panel side-panel-secondary side-panel-secondary--minimal">
+                    <div className="hud-card hud-card--queue hud-card--queue-mini">
+                      <span className="hud-label">
+                        <ModeGlyph mode={deferredGame.mode} className="hud-label-icon" />
+                        Next
+                      </span>
+                      <div className="next-queue next-queue--single" data-testid="next-queue">
+                        <MiniPiece piece={deferredGame.nextQueue[0] ?? null} />
+                      </div>
+                    </div>
+                  </aside>
+                </div>
               </div>
             </div>
           </div>
@@ -1561,7 +1627,18 @@ export function GameClient() {
 
             <section className="result-celebration" data-testid="result-celebration">
               <div className="result-celebration-copy">
-                <span className="status-chip">{resultCelebration?.badge}</span>
+                <span className="status-chip">
+                  <GameGlyph
+                    icon={
+                      deferredGame.mode === "SPRINT"
+                        ? "bolt"
+                        : deferredGame.mode === "DAILY_CHALLENGE"
+                          ? "gift"
+                          : "trophy"
+                    }
+                  />
+                  {resultCelebration?.badge}
+                </span>
                 <h2>{resultCelebration?.title}</h2>
                 <p>{resultCelebration?.summary}</p>
               </div>
